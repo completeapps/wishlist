@@ -52,13 +52,6 @@
       <input type="text" id="editItemPrice" placeholder="Price (e.g., $50)" class="form-input">
       <input type="url" id="editItemLink" placeholder="Link (optional)" class="form-input">
       <input type="url" id="editItemImage" placeholder="Image URL (optional)" class="form-input">
-      <select id="editItemTag" class="form-select">
-        <option value="">No Tag</option>
-        <option value="Birthday">🎂 Birthday</option>
-        <option value="Christmas">🎄 Christmas</option>
-        <option value="Graduation">🎓 Graduation</option>
-        <option value="General">🎁 General</option>
-      </select>
       <textarea id="editItemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
       <div class="form-buttons">
         <button onclick="saveItemEdit()" class="save-btn">Save Changes</button>
@@ -76,6 +69,33 @@
       </div>
       <div id="infoContent" class="info-content">
         No info available.
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments Modal -->
+  <div class="modal" id="commentsModal">
+    <div class="modal-content modal-large">
+      <div class="info-header">
+        <h3 id="commentsItemName">Comments</h3>
+        <button class="modal-close" onclick="closeCommentsModal()">×</button>
+      </div>
+      <div id="commentsContent" class="comments-list">
+        <p style="color: #666;">No comments yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Comment Modal -->
+  <div class="modal" id="addCommentModal">
+    <div class="modal-content">
+      <h3>Add Comment</h3>
+      <input type="hidden" id="commentItemId">
+      <input type="text" id="commentAuthor" placeholder="Your name" class="form-input">
+      <textarea id="commentText" placeholder="Write your comment..." class="form-textarea"></textarea>
+      <div class="form-buttons">
+        <button onclick="submitComment()" class="save-btn">Post Comment</button>
+        <button onclick="closeAddCommentModal()" class="cancel-btn">Cancel</button>
       </div>
     </div>
   </div>
@@ -114,13 +134,6 @@
         <button class="filter-btn" onclick="filterByPrice('50to100')">$50-$100</button>
         <button class="filter-btn" onclick="filterByPrice('over100')">Over $100</button>
       </div>
-      <div class="filter-group">
-        <button class="filter-btn active" onclick="filterByTag('all')">All Tags</button>
-        <button class="filter-btn" onclick="filterByTag('Birthday')">🎂 Birthday</button>
-        <button class="filter-btn" onclick="filterByTag('Christmas')">🎄 Christmas</button>
-        <button class="filter-btn" onclick="filterByTag('Graduation')">🎓 Graduation</button>
-        <button class="filter-btn" onclick="filterByTag('General')">🎁 General</button>
-      </div>
     </div>
 
     <!-- Add Item Form -->
@@ -129,13 +142,6 @@
       <input type="text" id="itemPrice" placeholder="Price (e.g., $50)" class="form-input">
       <input type="url" id="itemLink" placeholder="Link (optional)" class="form-input">
       <input type="url" id="itemImage" placeholder="Image URL (optional)" class="form-input">
-      <select id="itemTag" class="form-select">
-        <option value="">No Tag</option>
-        <option value="Birthday">🎂 Birthday</option>
-        <option value="Christmas">🎄 Christmas</option>
-        <option value="Graduation">🎓 Graduation</option>
-        <option value="General">🎁 General</option>
-      </select>
       <textarea id="itemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
       <div class="form-buttons">
         <button onclick="addItem()" class="save-btn">Save</button>
@@ -148,13 +154,13 @@
   </main>
 
   <!-- Footer -->
-<footer class="footer">
-  <a href="https://www.perplexity.ai" target="_blank" class="footer-link">
-    <span class="footer-text">Built with</span>
-    <img src="perplexity.png" alt="Perplexity" class="perplexity-logo">
-    <span class="footer-brand">Perplexity</span>
-  </a>
-</footer>
+  <footer class="footer">
+    <a href="https://www.perplexity.ai" target="_blank" class="footer-link">
+      <span class="footer-text">Built with</span>
+      <img src="perplexity.png" alt="Perplexity" class="perplexity-logo">
+      <span class="footer-brand">Perplexity</span>
+    </a>
+  </footer>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -242,25 +248,18 @@
       itemDiv.className = 'wishlist-item';
       itemDiv.dataset.id = id;
       itemDiv.dataset.price = item.price || '';
-      itemDiv.dataset.tag = item.tag || '';
       
       const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
       const isChecked = item.checked || false;
       const hasInfo = item.info && item.info.trim() !== '';
       const hasImage = item.image && item.image.trim() !== '';
-      const hasTag = item.tag && item.tag.trim() !== '';
+      const commentCount = item.comments ? Object.keys(item.comments).length : 0;
       
       let html = '';
       
       // Image
       if (hasImage) {
         html += `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="item-image" onerror="this.style.display='none'">`;
-      }
-      
-      // Tag
-      if (hasTag) {
-        const tagEmoji = item.tag === 'Birthday' ? '🎂' : item.tag === 'Christmas' ? '🎄' : item.tag === 'Graduation' ? '🎓' : '🎁';
-        html += `<div class="item-tags"><span class="item-tag">${tagEmoji} ${escapeHtml(item.tag)}</span></div>`;
       }
       
       // Header
@@ -283,45 +282,20 @@
       // Actions
       html += '<div class="item-actions">';
       if (item.link) {
-        html += `<a href="${escapeHtml(item.link)}" target="_blank" class="item-link">View →</a>`;
+        html += `<a href="${escapeHtml(item.link)}" target="_blank" class="item-link">View</a>`;
       }
       if (hasInfo) {
-        html += `<button class="info-btn-big" onclick="openInfo('${id}')">ℹ INFO</button>`;
+        html += `<button class="item-link-btn" onclick="openInfo('${id}')">Info</button>`;
       }
+      html += `<button class="item-link-btn" onclick="openComments('${id}')">Comments ${commentCount > 0 ? '(' + commentCount + ')' : ''}</button>`;
+      html += `<button class="item-link-btn" onclick="openAddComment('${id}')">Add Comment</button>`;
       if (isAdmin) {
-        html += `<button class="edit-btn admin-only" onclick="openEditItem('${id}')">✎ EDIT</button>`;
+        html += `<button class="item-link-btn admin-only edit-btn-inline" onclick="openEditItem('${id}')">Edit</button>`;
       }
       html += '</div>';
       
-      // Comments
-      html += `<div class="item-comments" id="comments-${id}">
-        <div class="comments-header">💬 Family Comments</div>
-        <div id="comment-list-${id}"></div>
-        <div class="comment-input-group">
-          <input type="text" id="comment-input-${id}" placeholder="Your name" class="comment-input" style="max-width:120px;">
-          <input type="text" id="comment-text-${id}" placeholder="Leave a comment..." class="comment-input">
-          <button onclick="addComment('${id}')" class="comment-btn">Send</button>
-        </div>
-      </div>`;
-      
       itemDiv.innerHTML = html;
       grid.appendChild(itemDiv);
-      
-      // Load comments
-      if (item.comments) {
-        Object.keys(item.comments).forEach(commentId => {
-          const comment = item.comments[commentId];
-          renderComment(id, comment);
-        });
-      }
-    };
-
-    window.renderComment = function(itemId, comment) {
-      const commentList = document.getElementById('comment-list-' + itemId);
-      const commentDiv = document.createElement('div');
-      commentDiv.className = 'comment';
-      commentDiv.innerHTML = `<span class="comment-author">${escapeHtml(comment.author)}:</span><span class="comment-text">${escapeHtml(comment.text)}</span>`;
-      commentList.appendChild(commentDiv);
     };
   </script>
 
