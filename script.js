@@ -1,5 +1,5 @@
 // Admin password (CHANGE THIS!)
-const ADMIN_PASSWORD = "yourpassword123";
+const ADMIN_PASSWORD = "0000";
 
 // Check if user is admin on page load
 window.addEventListener('DOMContentLoaded', () => {
