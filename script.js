@@ -1,9 +1,67 @@
+// Admin password (CHANGE THIS!)
+const ADMIN_PASSWORD = "yourpassword123";
+
+// Check if user is admin on page load
+window.addEventListener('DOMContentLoaded', () => {
+  updateAdminUI();
+});
+
+// Toggle admin mode button
+function toggleAdmin() {
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  
+  if (isAdmin) {
+    // Logout
+    sessionStorage.removeItem('isAdmin');
+    updateAdminUI();
+  } else {
+    // Show login modal
+    document.getElementById('adminModal').classList.add('active');
+  }
+}
+
+// Login admin
+function loginAdmin() {
+  const password = document.getElementById('adminPassword').value;
+  
+  if (password === ADMIN_PASSWORD) {
+    sessionStorage.setItem('isAdmin', 'true');
+    closeAdminModal();
+    updateAdminUI();
+    alert('Admin mode enabled');
+  } else {
+    alert('Incorrect password');
+  }
+}
+
+// Close admin modal
+function closeAdminModal() {
+  document.getElementById('adminModal').classList.remove('active');
+  document.getElementById('adminPassword').value = '';
+}
+
+// Update UI based on admin status
+function updateAdminUI() {
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  const adminBtn = document.getElementById('adminBtn');
+  const adminElements = document.querySelectorAll('.admin-only');
+  
+  if (isAdmin) {
+    adminBtn.classList.add('active');
+    adminBtn.textContent = 'Logout';
+    adminElements.forEach(el => el.style.display = 'block');
+  } else {
+    adminBtn.classList.remove('active');
+    adminBtn.textContent = 'Admin';
+    adminElements.forEach(el => el.style.display = 'none');
+  }
+}
+
 // Toggle add item form
 function toggleAddForm() {
   const form = document.getElementById('addForm');
   form.classList.toggle('active');
   
-  // Clear form inputs when closing
   if (!form.classList.contains('active')) {
     document.getElementById('itemName').value = '';
     document.getElementById('itemPrice').value = '';
@@ -11,8 +69,14 @@ function toggleAddForm() {
   }
 }
 
-// Add new item to wishlist
+// Add new item to Firebase
 function addItem() {
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  if (!isAdmin) {
+    alert('Admin access required');
+    return;
+  }
+  
   const name = document.getElementById('itemName').value.trim();
   const price = document.getElementById('itemPrice').value.trim();
   const link = document.getElementById('itemLink').value.trim();
@@ -22,92 +86,48 @@ function addItem() {
     return;
   }
   
-  const grid = document.getElementById('wishlistGrid');
+  const newItemRef = window.dbPush(window.dbRef(window.db, 'wishlist'));
+  window.dbSet(newItemRef, {
+    name: name,
+    price: price,
+    link: link,
+    checked: false
+  });
   
-  // Create new item element
-  const itemDiv = document.createElement('div');
-  itemDiv.className = 'wishlist-item';
-  
-  itemDiv.innerHTML = `
-    <div class="item-header">
-      <h3 class="item-name">${escapeHtml(name)}</h3>
-      <button class="delete-btn" onclick="deleteItem(this)">×</button>
-    </div>
-    ${price ? `<p class="item-price">${escapeHtml(price)}</p>` : ''}
-    ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="item-link">View →</a>` : ''}
-  `;
-  
-  grid.appendChild(itemDiv);
-  
-  // Close form and clear inputs
   toggleAddForm();
-  
-  // Save to localStorage
-  saveWishlist();
 }
 
-// Delete item from wishlist
-function deleteItem(button) {
-  if (confirm('Remove this item from your wishlist?')) {
-    button.closest('.wishlist-item').remove();
-    saveWishlist();
+// Delete item from Firebase
+function deleteItem(id) {
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  if (!isAdmin) {
+    alert('Admin access required');
+    return;
+  }
+  
+  if (confirm('Remove this item from wishlist?')) {
+    window.dbRemove(window.dbRef(window.db, 'wishlist/' + id));
   }
 }
 
-// Escape HTML to prevent XSS
+// Toggle check status (anyone can do this)
+function toggleCheck(id, checked) {
+  window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), {
+    checked: checked
+  });
+}
+
+// Escape HTML
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-// Save wishlist to localStorage
-function saveWishlist() {
-  const grid = document.getElementById('wishlistGrid');
-  const items = [];
-  
-  grid.querySelectorAll('.wishlist-item').forEach(item => {
-    const name = item.querySelector('.item-name').textContent;
-    const priceEl = item.querySelector('.item-price');
-    const linkEl = item.querySelector('.item-link');
-    
-    items.push({
-      name: name,
-      price: priceEl ? priceEl.textContent : '',
-      link: linkEl ? linkEl.getAttribute('href') : ''
-    });
-  });
-  
-  localStorage.setItem('wishlist', JSON.stringify(items));
-}
-
-// Load wishlist from localStorage
-function loadWishlist() {
-  const saved = localStorage.getItem('wishlist');
-  if (!saved) return;
-  
-  const items = JSON.parse(saved);
-  const grid = document.getElementById('wishlistGrid');
-  
-  // Clear current items (except samples on first load)
-  grid.innerHTML = '';
-  
-  items.forEach(item => {
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'wishlist-item';
-    
-    itemDiv.innerHTML = `
-      <div class="item-header">
-        <h3 class="item-name">${escapeHtml(item.name)}</h3>
-        <button class="delete-btn" onclick="deleteItem(this)">×</button>
-      </div>
-      ${item.price ? `<p class="item-price">${escapeHtml(item.price)}</p>` : ''}
-      ${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" class="item-link">View →</a>` : ''}
-    `;
-    
-    grid.appendChild(itemDiv);
-  });
-}
-
-// Load wishlist on page load
-window.addEventListener('DOMContentLoaded', loadWishlist);
+// Close modal on background click
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('adminModal');
+  if (e.target === modal) {
+    closeAdminModal();
+  }
+});
