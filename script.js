@@ -11,11 +11,9 @@ function toggleAdmin() {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   
   if (isAdmin) {
-    // Logout
     sessionStorage.removeItem('isAdmin');
     updateAdminUI();
   } else {
-    // Show login modal
     document.getElementById('adminModal').classList.add('active');
   }
 }
@@ -65,7 +63,6 @@ function openProfileEditor() {
     return;
   }
   
-  // Load current profile values
   document.getElementById('editName').value = document.getElementById('profileName').textContent;
   document.getElementById('editTitle').value = document.getElementById('profileTitle').textContent;
   document.getElementById('editLocation').value = document.getElementById('profileLocation').textContent.replace('📍 ', '');
@@ -118,6 +115,52 @@ function saveProfile() {
 // Close profile modal
 function closeProfileModal() {
   document.getElementById('profileModal').classList.remove('active');
+}
+
+// Open edit item modal
+function openEditItem(id, name, price, link, info) {
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  if (!isAdmin) {
+    alert('Admin access required');
+    return;
+  }
+  
+  document.getElementById('editItemId').value = id;
+  document.getElementById('editItemName').value = name;
+  document.getElementById('editItemPrice').value = price;
+  document.getElementById('editItemLink').value = link;
+  document.getElementById('editItemInfo').value = info;
+  
+  document.getElementById('editItemModal').classList.add('active');
+}
+
+// Save edited item
+function saveItemEdit() {
+  const id = document.getElementById('editItemId').value;
+  const name = document.getElementById('editItemName').value.trim();
+  const price = document.getElementById('editItemPrice').value.trim();
+  const link = document.getElementById('editItemLink').value.trim();
+  const info = document.getElementById('editItemInfo').value.trim();
+  
+  if (!name) {
+    alert('Please enter an item name');
+    return;
+  }
+  
+  window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), {
+    name: name,
+    price: price,
+    link: link,
+    info: info
+  });
+  
+  closeEditItemModal();
+  alert('Item updated!');
+}
+
+// Close edit item modal
+function closeEditItemModal() {
+  document.getElementById('editItemModal').classList.remove('active');
 }
 
 // Toggle add item form
@@ -207,6 +250,7 @@ document.addEventListener('click', (e) => {
   const adminModal = document.getElementById('adminModal');
   const profileModal = document.getElementById('profileModal');
   const infoModal = document.getElementById('infoModal');
+  const editItemModal = document.getElementById('editItemModal');
   
   if (e.target === adminModal) {
     closeAdminModal();
@@ -216,5 +260,8 @@ document.addEventListener('click', (e) => {
   }
   if (e.target === infoModal) {
     closeInfoModal();
+  }
+  if (e.target === editItemModal) {
+    closeEditItemModal();
   }
 });
