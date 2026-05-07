@@ -348,3 +348,45 @@ document.addEventListener('click', (e) => {
   if (e.target === infoModal) closeInfoModal();
   if (e.target === editItemModal) closeEditItemModal();
 });
+/* Footer - Perplexity Credit */
+.footer {
+  margin-top: 60px;
+  padding: 30px 20px;
+  text-align: center;
+  border-top: 1px solid #333;
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #999;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: #fff;
+}
+
+.footer-text {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.perplexity-logo {
+  width: 20px;
+  height: 20px;
+  color: #0ff;
+  transition: transform 0.2s;
+}
+
+.footer-link:hover .perplexity-logo {
+  transform: scale(1.1);
+}
+
+.footer-brand {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
