@@ -43,6 +43,22 @@
     </div>
   </div>
 
+  <!-- Edit Item Modal (Admin Only) -->
+  <div class="modal" id="editItemModal">
+    <div class="modal-content modal-large">
+      <h3>Edit Item</h3>
+      <input type="hidden" id="editItemId">
+      <input type="text" id="editItemName" placeholder="Item name" class="form-input">
+      <input type="text" id="editItemPrice" placeholder="Price (optional)" class="form-input">
+      <input type="url" id="editItemLink" placeholder="Link (optional)" class="form-input">
+      <textarea id="editItemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
+      <div class="form-buttons">
+        <button onclick="saveItemEdit()" class="save-btn">Save Changes</button>
+        <button onclick="closeEditItemModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Info Modal (For Viewing Item Details) -->
   <div class="modal" id="infoModal">
     <div class="modal-content">
@@ -188,7 +204,10 @@
       const isChecked = item.checked || false;
       const hasInfo = item.info && item.info.trim() !== '';
       
-      const escapedInfo = hasInfo ? item.info.replace(/`/g, '\\`').replace(/\$/g, '\\$') : '';
+      const escapedInfo = hasInfo ? item.info.replace(/`/g, '\\`').replace(/\$/g, '\\$').replace(/'/g, "\\\\'") : '';
+      const escapedName = item.name.replace(/'/g, "\\\\'");
+      const escapedPrice = (item.price || '').replace(/'/g, "\\\\'");
+      const escapedLink = (item.link || '').replace(/'/g, "\\\\'");
       
       itemDiv.innerHTML = `
         <div class="item-header">
@@ -202,7 +221,8 @@
         ${item.price ? `<p class="item-price">${escapeHtml(item.price)}</p>` : ''}
         <div class="item-actions">
           ${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" class="item-link">View →</a>` : ''}
-          ${hasInfo ? `<button class="info-btn" onclick='openInfo("${id}", "${escapeHtml(item.name)}", \`${escapedInfo}\`)'>INFO</button>` : ''}
+          ${hasInfo ? `<button class="info-btn-big" onclick='openInfo("${id}", "${escapedName}", \`${escapedInfo}\`)'>ℹ INFO</button>` : ''}
+          ${isAdmin ? `<button class="edit-btn admin-only" onclick='openEditItem("${id}", "${escapedName}", "${escapedPrice}", "${escapedLink}", \`${escapedInfo}\`)'>✎ EDIT</button>` : ''}
         </div>
       `;
       
