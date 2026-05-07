@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishlist</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Profile Section -->
+  <header class="profile-section">
+    <div class="profile-container">
+      <div class="profile-avatar">
+        <div class="avatar-circle">U</div>
+      </div>
+      <div class="profile-info">
+        <h1 class="profile-name">Your Name</h1>
+        <p class="profile-bio">Student · Developer · Bettendorf, IA</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Wishlist Section -->
+  <main class="wishlist-section">
+    <div class="section-header">
+      <h2>Wishlist</h2>
+      <button class="add-btn" onclick="toggleAddForm()">+ Add Item</button>
+    </div>
+
+    <!-- Add Item Form (hidden by default) -->
+    <div class="add-form" id="addForm">
+      <input type="text" id="itemName" placeholder="Item name" class="form-input">
+      <input type="text" id="itemPrice" placeholder="Price (optional)" class="form-input">
+      <input type="url" id="itemLink" placeholder="Link (optional)" class="form-input">
+      <div class="form-buttons">
+        <button onclick="addItem()" class="save-btn">Save</button>
+        <button onclick="toggleAddForm()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Wishlist Grid -->
+    <div class="wishlist-grid" id="wishlistGrid">
+      <!-- Sample items - these will be replaced by your items -->
+      <div class="wishlist-item">
+        <div class="item-header">
+          <h3 class="item-name">Nothing Phone (3)</h3>
+          <button class="delete-btn" onclick="deleteItem(this)">×</button>
+        </div>
+        <p class="item-price">$699</p>
+        <a href="https://nothing.tech" target="_blank" class="item-link">View →</a>
+      </div>
+
+      <div class="wishlist-item">
+        <div class="item-header">
+          <h3 class="item-name">CMF Watch Pro 2</h3>
+          <button class="delete-btn" onclick="deleteItem(this)">×</button>
+        </div>
+        <p class="item-price">$79</p>
+        <a href="https://cmf.tech" target="_blank" class="item-link">View →</a>
+      </div>
+
+      <div class="wishlist-item">
+        <div class="item-header">
+          <h3 class="item-name">Nothing Ear (3)</h3>
+          <button class="delete-btn" onclick="deleteItem(this)">×</button>
+        </div>
+        <p class="item-price">$149</p>
+        <a href="#" class="item-link">View →</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
