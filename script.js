@@ -1,12 +1,11 @@
-// Admin password (CHANGE THIS!)
+// Admin password
 const ADMIN_PASSWORD = "0000";
 
-// Check if user is admin on page load
 window.addEventListener('DOMContentLoaded', () => {
   updateAdminUI();
 });
 
-// Toggle admin mode button
+// Toggle admin mode
 function toggleAdmin() {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   
@@ -32,13 +31,11 @@ function loginAdmin() {
   }
 }
 
-// Close admin modal
 function closeAdminModal() {
   document.getElementById('adminModal').classList.remove('active');
   document.getElementById('adminPassword').value = '';
 }
 
-// Update UI based on admin status
 function updateAdminUI() {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   const adminBtn = document.getElementById('adminBtn');
@@ -55,7 +52,7 @@ function updateAdminUI() {
   }
 }
 
-// Open profile editor (admin only)
+// Profile functions
 function openProfileEditor() {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   if (!isAdmin) {
@@ -82,7 +79,6 @@ function openProfileEditor() {
   document.getElementById('profileModal').classList.add('active');
 }
 
-// Save profile to Firebase
 function saveProfile() {
   const name = document.getElementById('editName').value.trim();
   const title = document.getElementById('editTitle').value.trim();
@@ -112,34 +108,39 @@ function saveProfile() {
   alert('Profile updated!');
 }
 
-// Close profile modal
 function closeProfileModal() {
   document.getElementById('profileModal').classList.remove('active');
 }
 
-// Open edit item modal
-function openEditItem(id, name, price, link, info) {
+// Edit item - FIXED FUNCTION
+function openEditItem(id) {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   if (!isAdmin) {
     alert('Admin access required');
     return;
   }
   
+  const item = window.wishlistData[id];
+  if (!item) return;
+  
   document.getElementById('editItemId').value = id;
-  document.getElementById('editItemName').value = name;
-  document.getElementById('editItemPrice').value = price;
-  document.getElementById('editItemLink').value = link;
-  document.getElementById('editItemInfo').value = info;
+  document.getElementById('editItemName').value = item.name || '';
+  document.getElementById('editItemPrice').value = item.price || '';
+  document.getElementById('editItemLink').value = item.link || '';
+  document.getElementById('editItemImage').value = item.image || '';
+  document.getElementById('editItemTag').value = item.tag || '';
+  document.getElementById('editItemInfo').value = item.info || '';
   
   document.getElementById('editItemModal').classList.add('active');
 }
 
-// Save edited item
 function saveItemEdit() {
   const id = document.getElementById('editItemId').value;
   const name = document.getElementById('editItemName').value.trim();
   const price = document.getElementById('editItemPrice').value.trim();
   const link = document.getElementById('editItemLink').value.trim();
+  const image = document.getElementById('editItemImage').value.trim();
+  const tag = document.getElementById('editItemTag').value;
   const info = document.getElementById('editItemInfo').value.trim();
   
   if (!name) {
@@ -151,6 +152,8 @@ function saveItemEdit() {
     name: name,
     price: price,
     link: link,
+    image: image,
+    tag: tag,
     info: info
   });
   
@@ -158,12 +161,11 @@ function saveItemEdit() {
   alert('Item updated!');
 }
 
-// Close edit item modal
 function closeEditItemModal() {
   document.getElementById('editItemModal').classList.remove('active');
 }
 
-// Toggle add item form
+// Add/Delete items
 function toggleAddForm() {
   const form = document.getElementById('addForm');
   form.classList.toggle('active');
@@ -172,11 +174,12 @@ function toggleAddForm() {
     document.getElementById('itemName').value = '';
     document.getElementById('itemPrice').value = '';
     document.getElementById('itemLink').value = '';
+    document.getElementById('itemImage').value = '';
+    document.getElementById('itemTag').value = '';
     document.getElementById('itemInfo').value = '';
   }
 }
 
-// Add new item to Firebase
 function addItem() {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   if (!isAdmin) {
@@ -187,6 +190,8 @@ function addItem() {
   const name = document.getElementById('itemName').value.trim();
   const price = document.getElementById('itemPrice').value.trim();
   const link = document.getElementById('itemLink').value.trim();
+  const image = document.getElementById('itemImage').value.trim();
+  const tag = document.getElementById('itemTag').value;
   const info = document.getElementById('itemInfo').value.trim();
   
   if (!name) {
@@ -199,14 +204,16 @@ function addItem() {
     name: name,
     price: price,
     link: link,
+    image: image,
+    tag: tag,
     info: info,
-    checked: false
+    checked: false,
+    comments: {}
   });
   
   toggleAddForm();
 }
 
-// Delete item from Firebase
 function deleteItem(id) {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   if (!isAdmin) {
@@ -219,23 +226,107 @@ function deleteItem(id) {
   }
 }
 
-// Toggle check status (anyone can do this)
 function toggleCheck(id, checked) {
   window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), {
     checked: checked
   });
 }
 
-// Open info modal
-function openInfo(id, itemName, info) {
-  document.getElementById('infoItemName').textContent = itemName;
-  document.getElementById('infoContent').textContent = info || 'No info available.';
+// Info modal - FIXED FUNCTION
+function openInfo(id) {
+  const item = window.wishlistData[id];
+  if (!item) return;
+  
+  document.getElementById('infoItemName').textContent = item.name;
+  document.getElementById('infoContent').textContent = item.info || 'No info available.';
   document.getElementById('infoModal').classList.add('active');
 }
 
-// Close info modal
 function closeInfoModal() {
   document.getElementById('infoModal').classList.remove('active');
+}
+
+// Comments
+function addComment(itemId) {
+  const author = document.getElementById('comment-input-' + itemId).value.trim();
+  const text = document.getElementById('comment-text-' + itemId).value.trim();
+  
+  if (!author || !text) {
+    alert('Please enter your name and comment');
+    return;
+  }
+  
+  const commentRef = window.dbPush(window.dbRef(window.db, 'wishlist/' + itemId + '/comments'));
+  window.dbSet(commentRef, {
+    author: author,
+    text: text,
+    timestamp: Date.now()
+  });
+  
+  document.getElementById('comment-input-' + itemId).value = '';
+  document.getElementById('comment-text-' + itemId).value = '';
+}
+
+// Filters
+let currentPriceFilter = 'all';
+let currentTagFilter = 'all';
+
+function filterByPrice(filter) {
+  currentPriceFilter = filter;
+  
+  document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
+    if (btn.textContent.includes('$') || btn.textContent.includes('All Prices')) {
+      btn.classList.remove('active');
+    }
+  });
+  event.target.classList.add('active');
+  
+  applyFilters();
+}
+
+function filterByTag(filter) {
+  currentTagFilter = filter;
+  
+  document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
+    if (btn.textContent.includes('🎂') || btn.textContent.includes('🎄') || 
+        btn.textContent.includes('🎓') || btn.textContent.includes('🎁') || 
+        btn.textContent.includes('All Tags')) {
+      btn.classList.remove('active');
+    }
+  });
+  event.target.classList.add('active');
+  
+  applyFilters();
+}
+
+function applyFilters() {
+  const items = document.querySelectorAll('.wishlist-item');
+  
+  items.forEach(item => {
+    let showItem = true;
+    
+    // Price filter
+    if (currentPriceFilter !== 'all') {
+      const priceText = item.dataset.price;
+      const priceNum = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+      
+      if (currentPriceFilter === 'under50' && priceNum >= 50) showItem = false;
+      if (currentPriceFilter === '50to100' && (priceNum < 50 || priceNum > 100)) showItem = false;
+      if (currentPriceFilter === 'over100' && priceNum <= 100) showItem = false;
+    }
+    
+    // Tag filter
+    if (currentTagFilter !== 'all') {
+      const tag = item.dataset.tag;
+      if (tag !== currentTagFilter) showItem = false;
+    }
+    
+    if (showItem) {
+      item.classList.remove('hidden');
+    } else {
+      item.classList.add('hidden');
+    }
+  });
 }
 
 // Escape HTML
@@ -252,16 +343,8 @@ document.addEventListener('click', (e) => {
   const infoModal = document.getElementById('infoModal');
   const editItemModal = document.getElementById('editItemModal');
   
-  if (e.target === adminModal) {
-    closeAdminModal();
-  }
-  if (e.target === profileModal) {
-    closeProfileModal();
-  }
-  if (e.target === infoModal) {
-    closeInfoModal();
-  }
-  if (e.target === editItemModal) {
-    closeEditItemModal();
-  }
+  if (e.target === adminModal) closeAdminModal();
+  if (e.target === profileModal) closeProfileModal();
+  if (e.target === infoModal) closeInfoModal();
+  if (e.target === editItemModal) closeEditItemModal();
 });
