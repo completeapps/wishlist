@@ -10,6 +10,7 @@
   <!-- Admin Login (top-right corner) -->
   <div class="admin-controls">
     <button id="adminBtn" class="admin-btn" onclick="toggleAdmin()">Admin</button>
+    <button class="edit-profile-btn admin-only" onclick="openProfileEditor()" style="display:none;">Edit Profile</button>
   </div>
 
   <!-- Admin Password Modal -->
@@ -24,15 +25,52 @@
     </div>
   </div>
 
+  <!-- Profile Editor Modal (Admin Only) -->
+  <div class="modal" id="profileModal">
+    <div class="modal-content modal-large">
+      <h3>Edit Profile</h3>
+      <input type="text" id="editName" placeholder="Your Name" class="form-input">
+      <input type="text" id="editTitle" placeholder="Title (e.g., Student · Developer)" class="form-input">
+      <input type="text" id="editLocation" placeholder="Location" class="form-input">
+      <textarea id="editBio" placeholder="About me / Bio (optional)" class="form-textarea"></textarea>
+      <input type="text" id="editAvatar" placeholder="Avatar Letter (1 character)" class="form-input" maxlength="1">
+      <input type="url" id="editWebsite" placeholder="Website URL (optional)" class="form-input">
+      <input type="text" id="editInterests" placeholder="Interests (comma separated, optional)" class="form-input">
+      <div class="form-buttons">
+        <button onclick="saveProfile()" class="save-btn">Save Profile</button>
+        <button onclick="closeProfileModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Modal (For Viewing Item Details) -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <div class="info-header">
+        <h3 id="infoItemName">Item Info</h3>
+        <button class="modal-close" onclick="closeInfoModal()">×</button>
+      </div>
+      <div id="infoContent" class="info-content">
+        No info available.
+      </div>
+    </div>
+  </div>
+
   <!-- Profile Section -->
-  <header class="profile-section">
+  <header class="profile-section" id="profileSection">
     <div class="profile-container">
       <div class="profile-avatar">
-        <div class="avatar-circle">U</div>
+        <div class="avatar-circle" id="avatarCircle">U</div>
       </div>
       <div class="profile-info">
-        <h1 class="profile-name">Your Name</h1>
-        <p class="profile-bio">Student · Developer · Bettendorf, IA</p>
+        <h1 class="profile-name" id="profileName">Your Name</h1>
+        <p class="profile-title" id="profileTitle">Student · Developer</p>
+        <p class="profile-location" id="profileLocation">📍 Bettendorf, IA</p>
+        <p class="profile-bio" id="profileBio" style="display:none;"></p>
+        <div class="profile-meta" id="profileMeta" style="display:none;">
+          <a href="#" id="profileWebsite" target="_blank" class="profile-link" style="display:none;">🔗 Website</a>
+          <p class="profile-interests" id="profileInterests" style="display:none;"></p>
+        </div>
       </div>
     </div>
   </header>
@@ -49,6 +87,7 @@
       <input type="text" id="itemName" placeholder="Item name" class="form-input">
       <input type="text" id="itemPrice" placeholder="Price (optional)" class="form-input">
       <input type="url" id="itemLink" placeholder="Link (optional)" class="form-input">
+      <textarea id="itemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
       <div class="form-buttons">
         <button onclick="addItem()" class="save-btn">Save</button>
         <button onclick="toggleAddForm()" class="cancel-btn">Cancel</button>
@@ -66,17 +105,16 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
     import { getDatabase, ref, onValue, set, push, remove, update } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
 
-    // TODO: Replace with your Firebase config
     const firebaseConfig = {
-  apiKey: "AIzaSyAD87l-scYsGq_eX_LLXIuYy9CIyQN2SEY",
-  authDomain: "wishlist-31551.firebaseapp.com",
-  databaseURL: "https://wishlist-31551-default-rtdb.firebaseio.com",
-  projectId: "wishlist-31551",
-  storageBucket: "wishlist-31551.firebasestorage.app",
-  messagingSenderId: "513351669307",
-  appId: "1:513351669307:web:859850b58ecd3a1c7a6e1e",
-  measurementId: "G-6NSSE0FTNN"
-};
+      apiKey: "AIzaSyAD87l-scYsGq_eX_LLXIuYy9CIyQN2SEY",
+      authDomain: "wishlist-31551.firebaseapp.com",
+      databaseURL: "https://wishlist-31551-default-rtdb.firebaseio.com",
+      projectId: "wishlist-31551",
+      storageBucket: "wishlist-31551.firebasestorage.app",
+      messagingSenderId: "513351669307",
+      appId: "1:513351669307:web:859850b58ecd3a1c7a6e1e",
+      measurementId: "G-6NSSE0FTNN"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -86,6 +124,44 @@
     window.dbPush = push;
     window.dbRemove = remove;
     window.dbUpdate = update;
+
+    // Load profile from Firebase
+    const profileRef = ref(db, 'profile');
+    onValue(profileRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        document.getElementById('profileName').textContent = data.name || 'Your Name';
+        document.getElementById('avatarCircle').textContent = data.avatar || 'U';
+        document.getElementById('profileTitle').textContent = data.title || 'Student · Developer';
+        document.getElementById('profileLocation').textContent = '📍 ' + (data.location || 'Bettendorf, IA');
+        
+        const bioEl = document.getElementById('profileBio');
+        if (data.bio) {
+          bioEl.textContent = data.bio;
+          bioEl.style.display = 'block';
+        } else {
+          bioEl.style.display = 'none';
+        }
+        
+        const websiteEl = document.getElementById('profileWebsite');
+        if (data.website) {
+          websiteEl.href = data.website;
+          websiteEl.style.display = 'inline-block';
+          document.getElementById('profileMeta').style.display = 'block';
+        } else {
+          websiteEl.style.display = 'none';
+        }
+        
+        const interestsEl = document.getElementById('profileInterests');
+        if (data.interests) {
+          interestsEl.textContent = '💡 ' + data.interests;
+          interestsEl.style.display = 'block';
+          document.getElementById('profileMeta').style.display = 'block';
+        } else {
+          interestsEl.style.display = 'none';
+        }
+      }
+    });
 
     // Load wishlist items in real-time
     const wishlistRef = ref(db, 'wishlist');
@@ -110,6 +186,9 @@
       
       const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
       const isChecked = item.checked || false;
+      const hasInfo = item.info && item.info.trim() !== '';
+      
+      const escapedInfo = hasInfo ? item.info.replace(/`/g, '\\`').replace(/\$/g, '\\$') : '';
       
       itemDiv.innerHTML = `
         <div class="item-header">
@@ -121,7 +200,10 @@
           <button class="delete-btn admin-only" onclick="deleteItem('${id}')" style="display:${isAdmin ? 'block' : 'none'};">×</button>
         </div>
         ${item.price ? `<p class="item-price">${escapeHtml(item.price)}</p>` : ''}
-        ${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" class="item-link">View →</a>` : ''}
+        <div class="item-actions">
+          ${item.link ? `<a href="${escapeHtml(item.link)}" target="_blank" class="item-link">View →</a>` : ''}
+          ${hasInfo ? `<button class="info-btn" onclick='openInfo("${id}", "${escapeHtml(item.name)}", \`${escapedInfo}\`)'>INFO</button>` : ''}
+        </div>
       `;
       
       grid.appendChild(itemDiv);
