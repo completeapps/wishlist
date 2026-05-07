@@ -57,6 +57,69 @@ function updateAdminUI() {
   }
 }
 
+// Open profile editor (admin only)
+function openProfileEditor() {
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  if (!isAdmin) {
+    alert('Admin access required');
+    return;
+  }
+  
+  // Load current profile values
+  document.getElementById('editName').value = document.getElementById('profileName').textContent;
+  document.getElementById('editTitle').value = document.getElementById('profileTitle').textContent;
+  document.getElementById('editLocation').value = document.getElementById('profileLocation').textContent.replace('📍 ', '');
+  document.getElementById('editBio').value = document.getElementById('profileBio').textContent;
+  document.getElementById('editAvatar').value = document.getElementById('avatarCircle').textContent;
+  
+  const websiteEl = document.getElementById('profileWebsite');
+  if (websiteEl.style.display !== 'none') {
+    document.getElementById('editWebsite').value = websiteEl.href;
+  }
+  
+  const interestsEl = document.getElementById('profileInterests');
+  if (interestsEl.style.display !== 'none') {
+    document.getElementById('editInterests').value = interestsEl.textContent.replace('💡 ', '');
+  }
+  
+  document.getElementById('profileModal').classList.add('active');
+}
+
+// Save profile to Firebase
+function saveProfile() {
+  const name = document.getElementById('editName').value.trim();
+  const title = document.getElementById('editTitle').value.trim();
+  const location = document.getElementById('editLocation').value.trim();
+  const bio = document.getElementById('editBio').value.trim();
+  const avatar = document.getElementById('editAvatar').value.trim().toUpperCase();
+  const website = document.getElementById('editWebsite').value.trim();
+  const interests = document.getElementById('editInterests').value.trim();
+  
+  if (!name) {
+    alert('Please enter a name');
+    return;
+  }
+  
+  const profileData = {
+    name: name,
+    title: title,
+    location: location,
+    bio: bio,
+    avatar: avatar || name.charAt(0).toUpperCase(),
+    website: website,
+    interests: interests
+  };
+  
+  window.dbSet(window.dbRef(window.db, 'profile'), profileData);
+  closeProfileModal();
+  alert('Profile updated!');
+}
+
+// Close profile modal
+function closeProfileModal() {
+  document.getElementById('profileModal').classList.remove('active');
+}
+
 // Toggle add item form
 function toggleAddForm() {
   const form = document.getElementById('addForm');
@@ -66,6 +129,7 @@ function toggleAddForm() {
     document.getElementById('itemName').value = '';
     document.getElementById('itemPrice').value = '';
     document.getElementById('itemLink').value = '';
+    document.getElementById('itemInfo').value = '';
   }
 }
 
@@ -80,6 +144,7 @@ function addItem() {
   const name = document.getElementById('itemName').value.trim();
   const price = document.getElementById('itemPrice').value.trim();
   const link = document.getElementById('itemLink').value.trim();
+  const info = document.getElementById('itemInfo').value.trim();
   
   if (!name) {
     alert('Please enter an item name');
@@ -91,6 +156,7 @@ function addItem() {
     name: name,
     price: price,
     link: link,
+    info: info,
     checked: false
   });
   
@@ -117,6 +183,18 @@ function toggleCheck(id, checked) {
   });
 }
 
+// Open info modal
+function openInfo(id, itemName, info) {
+  document.getElementById('infoItemName').textContent = itemName;
+  document.getElementById('infoContent').textContent = info || 'No info available.';
+  document.getElementById('infoModal').classList.add('active');
+}
+
+// Close info modal
+function closeInfoModal() {
+  document.getElementById('infoModal').classList.remove('active');
+}
+
 // Escape HTML
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -124,10 +202,19 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Close modal on background click
+// Close modals on background click
 document.addEventListener('click', (e) => {
-  const modal = document.getElementById('adminModal');
-  if (e.target === modal) {
+  const adminModal = document.getElementById('adminModal');
+  const profileModal = document.getElementById('profileModal');
+  const infoModal = document.getElementById('infoModal');
+  
+  if (e.target === adminModal) {
     closeAdminModal();
+  }
+  if (e.target === profileModal) {
+    closeProfileModal();
+  }
+  if (e.target === infoModal) {
+    closeInfoModal();
   }
 });
