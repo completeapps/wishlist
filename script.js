@@ -112,7 +112,7 @@ function closeProfileModal() {
   document.getElementById('profileModal').classList.remove('active');
 }
 
-// Edit item - FIXED FUNCTION
+// Edit item
 function openEditItem(id) {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   if (!isAdmin) {
@@ -128,7 +128,6 @@ function openEditItem(id) {
   document.getElementById('editItemPrice').value = item.price || '';
   document.getElementById('editItemLink').value = item.link || '';
   document.getElementById('editItemImage').value = item.image || '';
-  document.getElementById('editItemTag').value = item.tag || '';
   document.getElementById('editItemInfo').value = item.info || '';
   
   document.getElementById('editItemModal').classList.add('active');
@@ -140,7 +139,6 @@ function saveItemEdit() {
   const price = document.getElementById('editItemPrice').value.trim();
   const link = document.getElementById('editItemLink').value.trim();
   const image = document.getElementById('editItemImage').value.trim();
-  const tag = document.getElementById('editItemTag').value;
   const info = document.getElementById('editItemInfo').value.trim();
   
   if (!name) {
@@ -153,7 +151,6 @@ function saveItemEdit() {
     price: price,
     link: link,
     image: image,
-    tag: tag,
     info: info
   });
   
@@ -175,7 +172,6 @@ function toggleAddForm() {
     document.getElementById('itemPrice').value = '';
     document.getElementById('itemLink').value = '';
     document.getElementById('itemImage').value = '';
-    document.getElementById('itemTag').value = '';
     document.getElementById('itemInfo').value = '';
   }
 }
@@ -191,7 +187,6 @@ function addItem() {
   const price = document.getElementById('itemPrice').value.trim();
   const link = document.getElementById('itemLink').value.trim();
   const image = document.getElementById('itemImage').value.trim();
-  const tag = document.getElementById('itemTag').value;
   const info = document.getElementById('itemInfo').value.trim();
   
   if (!name) {
@@ -205,7 +200,6 @@ function addItem() {
     price: price,
     link: link,
     image: image,
-    tag: tag,
     info: info,
     checked: false,
     comments: {}
@@ -232,7 +226,7 @@ function toggleCheck(id, checked) {
   });
 }
 
-// Info modal - FIXED FUNCTION
+// Info modal
 function openInfo(id) {
   const item = window.wishlistData[id];
   if (!item) return;
@@ -246,10 +240,49 @@ function closeInfoModal() {
   document.getElementById('infoModal').classList.remove('active');
 }
 
-// Comments
-function addComment(itemId) {
-  const author = document.getElementById('comment-input-' + itemId).value.trim();
-  const text = document.getElementById('comment-text-' + itemId).value.trim();
+// Comments modal
+function openComments(id) {
+  const item = window.wishlistData[id];
+  if (!item) return;
+  
+  document.getElementById('commentsItemName').textContent = item.name;
+  const commentsContent = document.getElementById('commentsContent');
+  commentsContent.innerHTML = '';
+  
+  if (item.comments && Object.keys(item.comments).length > 0) {
+    Object.values(item.comments).forEach(comment => {
+      const commentDiv = document.createElement('div');
+      commentDiv.className = 'comment';
+      commentDiv.innerHTML = `<span class="comment-author">${escapeHtml(comment.author)}:</span><span class="comment-text">${escapeHtml(comment.text)}</span>`;
+      commentsContent.appendChild(commentDiv);
+    });
+  } else {
+    commentsContent.innerHTML = '<p style="color: #666;">No comments yet.</p>';
+  }
+  
+  document.getElementById('commentsModal').classList.add('active');
+}
+
+function closeCommentsModal() {
+  document.getElementById('commentsModal').classList.remove('active');
+}
+
+// Add comment modal
+function openAddComment(id) {
+  document.getElementById('commentItemId').value = id;
+  document.getElementById('commentAuthor').value = '';
+  document.getElementById('commentText').value = '';
+  document.getElementById('addCommentModal').classList.add('active');
+}
+
+function closeAddCommentModal() {
+  document.getElementById('addCommentModal').classList.remove('active');
+}
+
+function submitComment() {
+  const itemId = document.getElementById('commentItemId').value;
+  const author = document.getElementById('commentAuthor').value.trim();
+  const text = document.getElementById('commentText').value.trim();
   
   if (!author || !text) {
     alert('Please enter your name and comment');
@@ -263,36 +296,18 @@ function addComment(itemId) {
     timestamp: Date.now()
   });
   
-  document.getElementById('comment-input-' + itemId).value = '';
-  document.getElementById('comment-text-' + itemId).value = '';
+  closeAddCommentModal();
+  alert('Comment posted!');
 }
 
 // Filters
 let currentPriceFilter = 'all';
-let currentTagFilter = 'all';
 
 function filterByPrice(filter) {
   currentPriceFilter = filter;
   
   document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
-    if (btn.textContent.includes('$') || btn.textContent.includes('All Prices')) {
-      btn.classList.remove('active');
-    }
-  });
-  event.target.classList.add('active');
-  
-  applyFilters();
-}
-
-function filterByTag(filter) {
-  currentTagFilter = filter;
-  
-  document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
-    if (btn.textContent.includes('🎂') || btn.textContent.includes('🎄') || 
-        btn.textContent.includes('🎓') || btn.textContent.includes('🎁') || 
-        btn.textContent.includes('All Tags')) {
-      btn.classList.remove('active');
-    }
+    btn.classList.remove('active');
   });
   event.target.classList.add('active');
   
@@ -313,12 +328,6 @@ function applyFilters() {
       if (currentPriceFilter === 'under50' && priceNum >= 50) showItem = false;
       if (currentPriceFilter === '50to100' && (priceNum < 50 || priceNum > 100)) showItem = false;
       if (currentPriceFilter === 'over100' && priceNum <= 100) showItem = false;
-    }
-    
-    // Tag filter
-    if (currentTagFilter !== 'all') {
-      const tag = item.dataset.tag;
-      if (tag !== currentTagFilter) showItem = false;
     }
     
     if (showItem) {
@@ -342,9 +351,13 @@ document.addEventListener('click', (e) => {
   const profileModal = document.getElementById('profileModal');
   const infoModal = document.getElementById('infoModal');
   const editItemModal = document.getElementById('editItemModal');
+  const commentsModal = document.getElementById('commentsModal');
+  const addCommentModal = document.getElementById('addCommentModal');
   
   if (e.target === adminModal) closeAdminModal();
   if (e.target === profileModal) closeProfileModal();
   if (e.target === infoModal) closeInfoModal();
   if (e.target === editItemModal) closeEditItemModal();
+  if (e.target === commentsModal) closeCommentsModal();
+  if (e.target === addCommentModal) closeAddCommentModal();
 });
