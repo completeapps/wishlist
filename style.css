@@ -54,10 +54,7 @@ body {
 h1 {
     text-align: center;
     margin-bottom: 50px;
-    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--accent);
     font-size: 3em;
     font-weight: 800;
     letter-spacing: -1px;
@@ -181,17 +178,6 @@ h1 {
     opacity: 0.65;
 }
 
-.wishlist-item.claimed::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-    pointer-events: none;
-}
-
 .wishlist-item img {
     width: 100%;
     height: 240px;
@@ -238,9 +224,9 @@ h1 {
 }
 
 .category-badge {
-    background: var(--accent-light);
-    color: var(--accent);
-    border: 1px solid var(--accent);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
 }
 
 .priority-badge {
@@ -248,19 +234,19 @@ h1 {
 }
 
 .priority-high {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: var(--danger);
 }
 
 .priority-medium {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    background: var(--warning);
 }
 
 .priority-low {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--success);
 }
 
 .private-badge {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    background: #6366f1;
     color: white;
 }
 
@@ -268,7 +254,7 @@ h1 {
     position: absolute;
     top: 20px;
     right: 20px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--success);
     color: white;
     padding: 8px 16px;
     border-radius: 10px;
@@ -282,35 +268,30 @@ h1 {
 .item-price {
     font-size: 2.2em;
     font-weight: 800;
-    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--accent);
     letter-spacing: -1px;
 }
 
 .price-savings {
     display: inline-block;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--success);
     color: white;
     padding: 6px 14px;
     border-radius: 8px;
     font-size: 0.85em;
     font-weight: 700;
     margin-top: 8px;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .price-increase {
     display: inline-block;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: var(--danger);
     color: white;
     padding: 6px 14px;
     border-radius: 8px;
     font-size: 0.85em;
     font-weight: 700;
     margin-top: 8px;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .item-tags {
@@ -360,57 +341,56 @@ h1 {
     transition: all 0.2s ease;
     text-decoration: none;
     display: inline-block;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn-link {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    background: var(--accent);
     color: white;
 }
 
 .btn-link:hover {
+    background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
 }
 
 .btn-info {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: #3b82f6;
     color: white;
 }
 
 .btn-info:hover {
+    background: #2563eb;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .btn-price {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--success);
     color: white;
 }
 
 .btn-price:hover {
+    background: #059669;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 .btn-edit {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    background: var(--warning);
     color: white;
 }
 
 .btn-edit:hover {
+    background: #d97706;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
 .btn-delete {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: var(--danger);
     color: white;
 }
 
 .btn-delete:hover {
+    background: #dc2626;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 /* Checkbox */
@@ -481,10 +461,7 @@ h1 {
 }
 
 .modal-content h2 {
-    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--accent);
     margin-bottom: 30px;
     font-size: 2em;
     font-weight: 800;
@@ -545,14 +522,13 @@ textarea:focus {
 }
 
 .submit-btn {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    background: var(--accent);
     color: white;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 .submit-btn:hover {
+    background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
 }
 
 .cancel-btn {
@@ -576,10 +552,7 @@ textarea:focus {
 }
 
 .info-section h3 {
-    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--accent);
     margin-bottom: 15px;
     font-size: 1.3em;
     font-weight: 800;
@@ -604,7 +577,6 @@ textarea:focus {
 
 .claimed-info {
     border-left-color: var(--success);
-    background: rgba(16, 185, 129, 0.05);
 }
 
 /* Price History */
@@ -613,10 +585,7 @@ textarea:focus {
 }
 
 .price-history h4 {
-    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--accent);
     font-weight: 800;
 }
 
@@ -634,7 +603,6 @@ textarea:focus {
 
 .price-entry.latest {
     border: 2px solid var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-light);
 }
 
 .price-value {
@@ -658,11 +626,11 @@ textarea:focus {
 }
 
 .price-change.down {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: var(--success);
 }
 
 .price-change.up {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: var(--danger);
 }
 
 .price-note {
