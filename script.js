@@ -141,7 +141,7 @@ function saveItemEdit() {
   const id = document.getElementById('editItemId').value;
   const item = window.wishlistData[id];
   const name = document.getElementById('editItemName').value.trim();
-  const price = document.getElementById('editItemPrice').value.trim();
+  const newPrice = document.getElementById('editItemPrice').value.trim();
   const link = document.getElementById('editItemLink').value.trim();
   const image = document.getElementById('editItemImage').value.trim();
   const info = document.getElementById('editItemInfo').value.trim();
@@ -157,7 +157,7 @@ function saveItemEdit() {
   
   const updateData = {
     name: name,
-    price: price,
+    price: newPrice,
     link: link,
     image: image,
     info: info,
@@ -168,16 +168,29 @@ function saveItemEdit() {
   };
   
   // Handle price tracking
-  if (item.price !== price) {
-    const priceHistory = item.priceHistory || window.initPriceHistory(item.price);
+  const oldPrice = item.price || '';
+  if (oldPrice !== newPrice && newPrice) {
+    const priceHistory = item.priceHistory || [];
+    
+    // Add original price if this is the first change
+    if (priceHistory.length === 0 && oldPrice) {
+      priceHistory.push({
+        price: oldPrice,
+        date: Date.now(),
+        note: 'Original price'
+      });
+    }
+    
+    // Add new price
     priceHistory.push({
-      price: price,
+      price: newPrice,
       date: Date.now(),
       note: 'Price updated'
     });
+    
     updateData.priceHistory = priceHistory;
   } else {
-    updateData.priceHistory = item.priceHistory;
+    updateData.priceHistory = item.priceHistory || [];
   }
   
   window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), updateData);
@@ -231,7 +244,8 @@ function addItem() {
   }
   
   const newItemRef = window.dbPush(window.dbRef(window.db, 'wishlist'));
-  window.dbSet(newItemRef, {
+  
+  const itemData = {
     name: name,
     price: price,
     link: link,
@@ -242,9 +256,19 @@ function addItem() {
     tags: tags,
     isPrivate: isPrivate,
     checked: false,
-    comments: {},
-    priceHistory: price ? window.initPriceHistory(price) : []
-  });
+    comments: {}
+  };
+  
+  // Initialize price history if price exists
+  if (price) {
+    itemData.priceHistory = [{
+      price: price,
+      date: Date.now(),
+      note: 'Original price'
+    }];
+  }
+  
+  window.dbSet(newItemRef, itemData);
   
   toggleAddForm();
 }
@@ -263,24 +287,18 @@ function deleteItem(id) {
 
 function toggleCheck(id, checked) {
   if (checked) {
-    // Use claimed feature confirmation
-    if (window.claimedFeature && window.claimedFeature.confirmPurchase) {
-      const checkbox = event.target;
-      const confirmed = confirm('Are you sure you bought this item?');
-      
-      if (confirmed) {
-        window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), {
-          checked: true,
-          claimedBy: 'Guest',
-          claimedDate: Date.now()
-        });
-      } else {
-        checkbox.checked = false;
-      }
-    } else {
+    // Confirmation when checking
+    const confirmed = confirm('Mark this item as purchased?');
+    
+    if (confirmed) {
       window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), {
-        checked: checked
+        checked: true,
+        claimedBy: 'Guest',
+        claimedDate: Date.now()
       });
+    } else {
+      // Uncheck the box if they cancel
+      event.target.checked = false;
     }
   } else {
     // Unchecking
@@ -299,17 +317,44 @@ function toggleCheck(id, checked) {
 }
 
 // Price update function
-window.updateItemPrice = function(id) {
+function updateItemPrice(id) {
   const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
   if (!isAdmin) {
     alert('Admin access required');
     return;
   }
   
-  if (window.priceTracking) {
-    window.priceTracking.showPriceUpdateModal(id);
+  const item = window.wishlistData[id];
+  if (!item) return;
+  
+  const newPrice = prompt('Enter new price:', item.price || '');
+  if (!newPrice) return;
+  
+  const priceHistory = item.priceHistory || [];
+  
+  // Add original price if this is the first change
+  if (priceHistory.length === 0 && item.price) {
+    priceHistory.push({
+      price: item.price,
+      date: Date.now(),
+      note: 'Original price'
+    });
   }
-};
+  
+  // Add new price
+  priceHistory.push({
+    price: newPrice,
+    date: Date.now(),
+    note: prompt('Note (optional):') || 'Price updated'
+  });
+  
+  window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), {
+    price: newPrice,
+    priceHistory: priceHistory
+  });
+  
+  alert('Price updated!');
+}
 
 // Info modal
 function openInfo(id) {
@@ -321,8 +366,38 @@ function openInfo(id) {
   let infoHTML = item.info ? `<p>${escapeHtml(item.info)}</p>` : '<p>No info available.</p>';
   
   // Add price history if available
-  if (window.getPriceHistoryHTML && item.priceHistory && item.priceHistory.length > 0) {
-    infoHTML += '<div class="info-section">' + window.getPriceHistoryHTML(item) + '</div>';
+  if (item.priceHistory && item.priceHistory.length > 0) {
+    infoHTML += '<div class="price-history">';
+    infoHTML += '<h4 style="color: var(--accent); margin: 15px 0 10px 0;">Price History</h4>';
+    
+    item.priceHistory.forEach((entry, index) => {
+      const isLatest = index === item.priceHistory.length - 1;
+      const date = new Date(entry.date).toLocaleDateString();
+      
+      infoHTML += `<div class="price-entry ${isLatest ? 'latest' : ''}">`;
+      infoHTML += `<span class="price-value">${escapeHtml(entry.price)}</span>`;
+      infoHTML += `<span class="price-date">${date}</span>`;
+      
+      if (index > 0) {
+        const prevPrice = parseFloat(item.priceHistory[index - 1].price.replace(/[^0-9.]/g, ''));
+        const currPrice = parseFloat(entry.price.replace(/[^0-9.]/g, ''));
+        const diff = (currPrice - prevPrice).toFixed(2);
+        
+        if (diff < 0) {
+          infoHTML += `<span class="price-change down">-$${Math.abs(diff)}</span>`;
+        } else if (diff > 0) {
+          infoHTML += `<span class="price-change up">+$${diff}</span>`;
+        }
+      }
+      
+      if (entry.note) {
+        infoHTML += `<span class="price-note">${escapeHtml(entry.note)}</span>`;
+      }
+      
+      infoHTML += '</div>';
+    });
+    
+    infoHTML += '</div>';
   }
   
   document.getElementById('infoContent').innerHTML = infoHTML;
@@ -502,6 +577,7 @@ document.addEventListener('click', (e) => {
   if (e.target === commentsModal) closeCommentsModal();
   if (e.target === addCommentModal) closeAddCommentModal();
 });
+
 // Theme toggle function
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -518,12 +594,14 @@ function toggleTheme() {
 }
 
 // Apply saved theme on load
-window.addEventListener('DOMContentLoaded', () => {
+(function() {
   const savedTheme = localStorage.getItem('wishlist-theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
   
-  const btn = document.getElementById('themeToggle');
-  if (btn) {
-    btn.innerHTML = savedTheme === 'light' ? '🌙' : '☀️';
-  }
-});
+  window.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.innerHTML = savedTheme === 'light' ? '🌙' : '☀️';
+    }
+  });
+})();
