@@ -502,3 +502,28 @@ document.addEventListener('click', (e) => {
   if (e.target === commentsModal) closeCommentsModal();
   if (e.target === addCommentModal) closeAddCommentModal();
 });
+// Theme toggle function
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('wishlist-theme', newTheme);
+  
+  // Update button icon
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.innerHTML = newTheme === 'light' ? '🌙' : '☀️';
+  }
+}
+
+// Apply saved theme on load
+window.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('wishlist-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.innerHTML = savedTheme === 'light' ? '🌙' : '☀️';
+  }
+});
