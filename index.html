@@ -53,11 +53,7 @@
       <input type="url" id="editItemLink" placeholder="Link (optional)" class="form-input">
       <input type="url" id="editItemImage" placeholder="Image URL (optional)" class="form-input">
       <select id="editItemTag" class="form-select">
-        <option value="">No Tag</option>
-        <option value="Birthday">🎂 Birthday</option>
-        <option value="Christmas">🎄 Christmas</option>
-        <option value="Graduation">🎓 Graduation</option>
-        <option value="General">🎁 General</option>
+        <!-- Populated dynamically from tags.js -->
       </select>
       <textarea id="editItemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
       <div class="form-buttons">
@@ -141,12 +137,8 @@
         <button class="filter-btn" onclick="filterByPrice('50to100')">$50-$100</button>
         <button class="filter-btn" onclick="filterByPrice('over100')">Over $100</button>
       </div>
-      <div class="filter-group">
-        <button class="filter-btn active" onclick="filterByTag('all')">All Tags</button>
-        <button class="filter-btn" onclick="filterByTag('Birthday')">🎂 Birthday</button>
-        <button class="filter-btn" onclick="filterByTag('Christmas')">🎄 Christmas</button>
-        <button class="filter-btn" onclick="filterByTag('Graduation')">🎓 Graduation</button>
-        <button class="filter-btn" onclick="filterByTag('General')">🎁 General</button>
+      <div class="filter-group" id="tagFilterGroup">
+        <!-- Populated dynamically from tags.js -->
       </div>
     </div>
 
@@ -157,11 +149,7 @@
       <input type="url" id="itemLink" placeholder="Link (optional)" class="form-input">
       <input type="url" id="itemImage" placeholder="Image URL (optional)" class="form-input">
       <select id="itemTag" class="form-select">
-        <option value="">No Tag</option>
-        <option value="Birthday">🎂 Birthday</option>
-        <option value="Christmas">🎄 Christmas</option>
-        <option value="Graduation">🎓 Graduation</option>
-        <option value="General">🎁 General</option>
+        <!-- Populated dynamically from tags.js -->
       </select>
       <textarea id="itemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
       <div class="form-buttons">
@@ -182,6 +170,9 @@
       <span class="footer-brand">Perplexity</span>
     </a>
   </footer>
+
+  <!-- Load tags first -->
+  <script src="tags.js"></script>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -207,6 +198,45 @@
     window.dbPush = push;
     window.dbRemove = remove;
     window.dbUpdate = update;
+
+    // Build tag filters and dropdowns from tags.js
+    window.buildTagUI = function() {
+      const tags = window.WISHLIST_TAGS || [];
+      
+      // Build tag filter buttons
+      const tagFilterGroup = document.getElementById('tagFilterGroup');
+      tagFilterGroup.innerHTML = '<button class="filter-btn active" onclick="filterByTag(\'all\')">All Tags</button>';
+      tags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.onclick = () => filterByTag(tag.name);
+        btn.textContent = tag.emoji + ' ' + tag.name;
+        tagFilterGroup.appendChild(btn);
+      });
+      
+      // Build add item tag dropdown
+      const itemTagSelect = document.getElementById('itemTag');
+      itemTagSelect.innerHTML = '<option value="">No Tag</option>';
+      tags.forEach(tag => {
+        const option = document.createElement('option');
+        option.value = tag.name;
+        option.textContent = tag.emoji + ' ' + tag.name;
+        itemTagSelect.appendChild(option);
+      });
+      
+      // Build edit item tag dropdown
+      const editItemTagSelect = document.getElementById('editItemTag');
+      editItemTagSelect.innerHTML = '<option value="">No Tag</option>';
+      tags.forEach(tag => {
+        const option = document.createElement('option');
+        option.value = tag.name;
+        option.textContent = tag.emoji + ' ' + tag.name;
+        editItemTagSelect.appendChild(option);
+      });
+    };
+
+    // Build UI when page loads
+    window.buildTagUI();
 
     // Load profile
     const profileRef = ref(db, 'profile');
@@ -287,13 +317,10 @@
       
       // Tags
       if (hasTag) {
-        const tagEmoji = {
-          'Birthday': '🎂',
-          'Christmas': '🎄',
-          'Graduation': '🎓',
-          'General': '🎁'
-        };
-        html += `<div class="item-tags"><span class="item-tag">${tagEmoji[item.tag] || ''} ${escapeHtml(item.tag)}</span></div>`;
+        const tags = window.WISHLIST_TAGS || [];
+        const tagObj = tags.find(t => t.name === item.tag);
+        const emoji = tagObj ? tagObj.emoji : '';
+        html += `<div class="item-tags"><span class="item-tag">${emoji} ${escapeHtml(item.tag)}</span></div>`;
       }
       
       // Header
