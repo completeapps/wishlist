@@ -1,8 +1,6 @@
-// Edit your tags here!
-// Format: { name: "Tag Name", emoji: "🎁" }
 
 const WISHLIST_TAGS = [
-  { name: "Graduation?", emoji: "🎓" },
+  { name: "Graduation", emoji: "🎓" },
   { name: "General", emoji: "🎁" },
   { name: "Tech", emoji: "💻" },
   { name: "Books", emoji: "📚" },
