@@ -128,6 +128,7 @@ function openEditItem(id) {
   document.getElementById('editItemPrice').value = item.price || '';
   document.getElementById('editItemLink').value = item.link || '';
   document.getElementById('editItemImage').value = item.image || '';
+  document.getElementById('editItemTag').value = item.tag || '';
   document.getElementById('editItemInfo').value = item.info || '';
   
   document.getElementById('editItemModal').classList.add('active');
@@ -139,6 +140,7 @@ function saveItemEdit() {
   const price = document.getElementById('editItemPrice').value.trim();
   const link = document.getElementById('editItemLink').value.trim();
   const image = document.getElementById('editItemImage').value.trim();
+  const tag = document.getElementById('editItemTag').value;
   const info = document.getElementById('editItemInfo').value.trim();
   
   if (!name) {
@@ -151,6 +153,7 @@ function saveItemEdit() {
     price: price,
     link: link,
     image: image,
+    tag: tag,
     info: info
   });
   
@@ -172,6 +175,7 @@ function toggleAddForm() {
     document.getElementById('itemPrice').value = '';
     document.getElementById('itemLink').value = '';
     document.getElementById('itemImage').value = '';
+    document.getElementById('itemTag').value = '';
     document.getElementById('itemInfo').value = '';
   }
 }
@@ -187,6 +191,7 @@ function addItem() {
   const price = document.getElementById('itemPrice').value.trim();
   const link = document.getElementById('itemLink').value.trim();
   const image = document.getElementById('itemImage').value.trim();
+  const tag = document.getElementById('itemTag').value;
   const info = document.getElementById('itemInfo').value.trim();
   
   if (!name) {
@@ -200,6 +205,7 @@ function addItem() {
     price: price,
     link: link,
     image: image,
+    tag: tag,
     info: info,
     checked: false,
     comments: {}
@@ -245,15 +251,24 @@ function openComments(id) {
   const item = window.wishlistData[id];
   if (!item) return;
   
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  
   document.getElementById('commentsItemName').textContent = item.name;
   const commentsContent = document.getElementById('commentsContent');
   commentsContent.innerHTML = '';
   
   if (item.comments && Object.keys(item.comments).length > 0) {
-    Object.values(item.comments).forEach(comment => {
+    Object.entries(item.comments).forEach(([commentId, comment]) => {
       const commentDiv = document.createElement('div');
       commentDiv.className = 'comment';
-      commentDiv.innerHTML = `<span class="comment-author">${escapeHtml(comment.author)}:</span><span class="comment-text">${escapeHtml(comment.text)}</span>`;
+      
+      let commentHTML = `<span class="comment-author">${escapeHtml(comment.author)}:</span> <span class="comment-text">${escapeHtml(comment.text)}</span>`;
+      
+      if (isAdmin) {
+        commentHTML += ` <button class="delete-comment-btn" onclick="deleteComment('${id}', '${commentId}')">×</button>`;
+      }
+      
+      commentDiv.innerHTML = commentHTML;
       commentsContent.appendChild(commentDiv);
     });
   } else {
@@ -265,6 +280,21 @@ function openComments(id) {
 
 function closeCommentsModal() {
   document.getElementById('commentsModal').classList.remove('active');
+}
+
+// Delete comment
+function deleteComment(itemId, commentId) {
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+  if (!isAdmin) {
+    alert('Admin access required');
+    return;
+  }
+  
+  if (confirm('Delete this comment?')) {
+    window.dbRemove(window.dbRef(window.db, 'wishlist/' + itemId + '/comments/' + commentId));
+    // Refresh the comments modal
+    setTimeout(() => openComments(itemId), 200);
+  }
 }
 
 // Add comment modal
@@ -302,12 +332,30 @@ function submitComment() {
 
 // Filters
 let currentPriceFilter = 'all';
+let currentTagFilter = 'all';
 
 function filterByPrice(filter) {
   currentPriceFilter = filter;
   
   document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
-    btn.classList.remove('active');
+    if (btn.textContent.includes('$') || btn.textContent.includes('All Prices')) {
+      btn.classList.remove('active');
+    }
+  });
+  event.target.classList.add('active');
+  
+  applyFilters();
+}
+
+function filterByTag(filter) {
+  currentTagFilter = filter;
+  
+  document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
+    if (btn.textContent.includes('🎂') || btn.textContent.includes('🎄') || 
+        btn.textContent.includes('🎓') || btn.textContent.includes('🎁') || 
+        btn.textContent.includes('All Tags')) {
+      btn.classList.remove('active');
+    }
   });
   event.target.classList.add('active');
   
@@ -328,6 +376,12 @@ function applyFilters() {
       if (currentPriceFilter === 'under50' && priceNum >= 50) showItem = false;
       if (currentPriceFilter === '50to100' && (priceNum < 50 || priceNum > 100)) showItem = false;
       if (currentPriceFilter === 'over100' && priceNum <= 100) showItem = false;
+    }
+    
+    // Tag filter
+    if (currentTagFilter !== 'all') {
+      const tag = item.dataset.tag;
+      if (tag !== currentTagFilter) showItem = false;
     }
     
     if (showItem) {
