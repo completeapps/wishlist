@@ -7,10 +7,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Theme Toggle -->
-  <button class="theme-toggle" onclick="window.themeManager.toggle()" title="Toggle theme">
-    <span class="theme-icon">🌙</span>
-  </button>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</button>
 
   <!-- Admin Login (top-right corner) -->
   <div class="admin-controls">
@@ -58,32 +56,6 @@
       <input type="url" id="editItemLink" placeholder="Link (optional)" class="form-input">
       <input type="url" id="editItemImage" placeholder="Image URL (optional)" class="form-input">
       <textarea id="editItemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
-      
-      <label>Category</label>
-      <select id="editItemCategory" class="form-input">
-        <option value="">Select category...</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Books">Books</option>
-        <option value="Clothing">Clothing</option>
-        <option value="Games">Games</option>
-        <option value="Sports">Sports</option>
-        <option value="Other">Other</option>
-      </select>
-      
-      <label>Priority</label>
-      <select id="editItemPriority" class="form-input">
-        <option value="low">Low</option>
-        <option value="medium" selected>Medium</option>
-        <option value="high">High</option>
-      </select>
-      
-      <input type="text" id="editItemTags" placeholder="Tags (comma-separated)" class="form-input">
-      
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-        <input type="checkbox" id="editItemPrivate">
-        🔒 Private (Admin only)
-      </label>
-      
       <div class="form-buttons">
         <button onclick="saveItemEdit()" class="save-btn">Save Changes</button>
         <button onclick="closeEditItemModal()" class="cancel-btn">Cancel</button>
@@ -174,30 +146,6 @@
       <input type="url" id="itemLink" placeholder="Link (optional)" class="form-input">
       <input type="url" id="itemImage" placeholder="Image URL (optional)" class="form-input">
       <textarea id="itemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
-      
-      <select id="itemCategory" class="form-input">
-        <option value="">Category (optional)</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Books">Books</option>
-        <option value="Clothing">Clothing</option>
-        <option value="Games">Games</option>
-        <option value="Sports">Sports</option>
-        <option value="Other">Other</option>
-      </select>
-      
-      <select id="itemPriority" class="form-input">
-        <option value="medium">Priority: Medium</option>
-        <option value="low">Priority: Low</option>
-        <option value="high">Priority: High</option>
-      </select>
-      
-      <input type="text" id="itemTags" placeholder="Tags (comma-separated, optional)" class="form-input">
-      
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary);">
-        <input type="checkbox" id="itemPrivate">
-        🔒 Private (Admin only)
-      </label>
-      
       <div class="form-buttons">
         <button onclick="addItem()" class="save-btn">Save</button>
         <button onclick="toggleAddForm()" class="cancel-btn">Cancel</button>
@@ -241,7 +189,6 @@
     window.dbPush = push;
     window.dbRemove = remove;
     window.dbUpdate = update;
-    window.dbOnValue = onValue;
 
     // Load profile
     const profileRef = ref(db, 'profile');
@@ -311,11 +258,6 @@
       const hasImage = item.image && item.image.trim() !== '';
       const commentCount = item.comments ? Object.keys(item.comments).length : 0;
       
-      // Check if item should be visible based on privacy
-      if (item.isPrivate && !isAdmin) {
-        return; // Don't render private items for non-admins
-      }
-      
       let html = '';
       
       // Image
@@ -335,40 +277,9 @@
         </div>
       `;
       
-      // Badges
-      if (item.category || item.priority || item.isPrivate) {
-        html += '<div class="item-badges">';
-        if (item.isPrivate && isAdmin) {
-          html += '<span class="private-badge">🔒 PRIVATE</span>';
-        }
-        if (item.category) {
-          html += `<span class="category-badge">${escapeHtml(item.category)}</span>`;
-        }
-        if (item.priority) {
-          html += `<span class="priority-badge priority-${item.priority}">${item.priority.toUpperCase()}</span>`;
-        }
-        html += '</div>';
-      }
-      
       // Price
       if (item.price) {
         html += `<p class="item-price">${escapeHtml(item.price)}</p>`;
-        
-        // Price comparison
-        const priceComp = window.getPriceComparison ? window.getPriceComparison(item) : null;
-        if (priceComp) {
-          html += priceComp;
-        }
-      }
-      
-      // Tags
-      if (item.tags) {
-        html += `<div class="item-tags">${window.tagsFeature ? window.tagsFeature.getTagsHTML(item.tags) : escapeHtml(item.tags)}</div>`;
-      }
-      
-      // Claimed badge
-      if (isChecked && item.claimedBy) {
-        html += '<span class="claimed-badge">✓ PURCHASED</span>';
       }
       
       // Actions
@@ -383,7 +294,6 @@
       html += `<button class="item-link-btn" onclick="openAddComment('${id}')">Add Comment</button>`;
       if (isAdmin) {
         html += `<button class="item-link-btn admin-only edit-btn-inline" onclick="openEditItem('${id}')">Edit</button>`;
-        html += `<button class="item-link-btn admin-only" onclick="updateItemPrice('${id}')">💲 Price</button>`;
       }
       html += '</div>';
       
@@ -392,12 +302,6 @@
     };
   </script>
 
-  <!-- Load feature modules -->
-  <script src="theme.js"></script>
-  <script src="tags.js"></script>
-  <script src="claimed.js"></script>
-  <script src="private.js"></script>
-  <script src="pricetracking.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
