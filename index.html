@@ -1,142 +1,403 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wishlist</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishlist</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Theme Toggle -->
-    <button class="theme-toggle" onclick="window.themeManager.toggle()" title="Toggle theme">
-        <span class="theme-icon">🌙</span>
-    </button>
+  <!-- Theme Toggle -->
+  <button class="theme-toggle" onclick="window.themeManager.toggle()" title="Toggle theme">
+    <span class="theme-icon">🌙</span>
+  </button>
 
-    <!-- Admin Login Button -->
-    <button class="admin-btn" onclick="showAdminLogin()">Admin Login</button>
+  <!-- Admin Login (top-right corner) -->
+  <div class="admin-controls">
+    <button id="adminBtn" class="admin-btn" onclick="toggleAdmin()">Admin</button>
+    <button class="edit-profile-btn admin-only" onclick="openProfileEditor()" style="display:none;">Edit Profile</button>
+  </div>
 
-    <div class="container">
-        <h1>🎁 My Wishlist</h1>
+  <!-- Admin Password Modal -->
+  <div class="modal" id="adminModal">
+    <div class="modal-content">
+      <h3>Admin Login</h3>
+      <input type="password" id="adminPassword" placeholder="Enter password" class="form-input">
+      <div class="form-buttons">
+        <button onclick="loginAdmin()" class="save-btn">Login</button>
+        <button onclick="closeAdminModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-        <!-- Admin Controls -->
-        <div id="adminControls" style="display: none;">
-            <button class="add-btn" onclick="showAddForm()">+ Add Item</button>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+  <!-- Profile Editor Modal -->
+  <div class="modal" id="profileModal">
+    <div class="modal-content modal-large">
+      <h3>Edit Profile</h3>
+      <input type="text" id="editName" placeholder="Your Name" class="form-input">
+      <input type="text" id="editTitle" placeholder="Title (e.g., Student · Developer)" class="form-input">
+      <input type="text" id="editLocation" placeholder="Location" class="form-input">
+      <textarea id="editBio" placeholder="About me / Bio (optional)" class="form-textarea"></textarea>
+      <input type="text" id="editAvatar" placeholder="Avatar Letter (1 character)" class="form-input" maxlength="1">
+      <input type="url" id="editWebsite" placeholder="Website URL (optional)" class="form-input">
+      <input type="text" id="editInterests" placeholder="Interests (comma separated, optional)" class="form-input">
+      <div class="form-buttons">
+        <button onclick="saveProfile()" class="save-btn">Save Profile</button>
+        <button onclick="closeProfileModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Item Modal -->
+  <div class="modal" id="editItemModal">
+    <div class="modal-content modal-large">
+      <h3>Edit Item</h3>
+      <input type="hidden" id="editItemId">
+      <input type="text" id="editItemName" placeholder="Item name" class="form-input">
+      <input type="text" id="editItemPrice" placeholder="Price (e.g., $50)" class="form-input">
+      <input type="url" id="editItemLink" placeholder="Link (optional)" class="form-input">
+      <input type="url" id="editItemImage" placeholder="Image URL (optional)" class="form-input">
+      <textarea id="editItemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
+      
+      <label>Category</label>
+      <select id="editItemCategory" class="form-input">
+        <option value="">Select category...</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Books">Books</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Games">Games</option>
+        <option value="Sports">Sports</option>
+        <option value="Other">Other</option>
+      </select>
+      
+      <label>Priority</label>
+      <select id="editItemPriority" class="form-input">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+      </select>
+      
+      <input type="text" id="editItemTags" placeholder="Tags (comma-separated)" class="form-input">
+      
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" id="editItemPrivate">
+        🔒 Private (Admin only)
+      </label>
+      
+      <div class="form-buttons">
+        <button onclick="saveItemEdit()" class="save-btn">Save Changes</button>
+        <button onclick="closeEditItemModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Modal -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <div class="info-header">
+        <h3 id="infoItemName">Item Info</h3>
+        <button class="modal-close" onclick="closeInfoModal()">×</button>
+      </div>
+      <div id="infoContent" class="info-content">
+        No info available.
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments Modal -->
+  <div class="modal" id="commentsModal">
+    <div class="modal-content modal-large">
+      <div class="info-header">
+        <h3 id="commentsItemName">Comments</h3>
+        <button class="modal-close" onclick="closeCommentsModal()">×</button>
+      </div>
+      <div id="commentsContent" class="comments-list">
+        <p style="color: #666;">No comments yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Comment Modal -->
+  <div class="modal" id="addCommentModal">
+    <div class="modal-content">
+      <h3>Add Comment</h3>
+      <input type="hidden" id="commentItemId">
+      <input type="text" id="commentAuthor" placeholder="Your name" class="form-input">
+      <textarea id="commentText" placeholder="Write your comment..." class="form-textarea"></textarea>
+      <div class="form-buttons">
+        <button onclick="submitComment()" class="save-btn">Post Comment</button>
+        <button onclick="closeAddCommentModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Section -->
+  <header class="profile-section">
+    <div class="profile-container">
+      <div class="profile-avatar">
+        <div class="avatar-circle" id="avatarCircle">U</div>
+      </div>
+      <div class="profile-info">
+        <h1 class="profile-name" id="profileName">Your Name</h1>
+        <p class="profile-title" id="profileTitle">Student · Developer</p>
+        <p class="profile-location" id="profileLocation">📍 Bettendorf, IA</p>
+        <p class="profile-bio" id="profileBio" style="display:none;"></p>
+        <div class="profile-meta" id="profileMeta" style="display:none;">
+          <a href="#" id="profileWebsite" target="_blank" class="profile-link" style="display:none;">🔗 Website</a>
+          <p class="profile-interests" id="profileInterests" style="display:none;"></p>
         </div>
+      </div>
+    </div>
+  </header>
 
-        <!-- Items Display -->
-        <div id="wishlistItems"></div>
+  <!-- Wishlist Section -->
+  <main class="wishlist-section">
+    <div class="section-header">
+      <h2>Wishlist</h2>
+      <button class="add-btn admin-only" onclick="toggleAddForm()" style="display:none;">+ Add Item</button>
     </div>
 
-    <!-- Add/Edit Modal -->
-    <div id="itemModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle">Add New Item</h2>
-            <form id="itemForm">
-                <label>Item Name *</label>
-                <input type="text" id="itemName" required>
-                
-                <label>Price *</label>
-                <input type="text" id="itemPrice" placeholder="$0.00" required>
-                
-                <label>Link</label>
-                <input type="url" id="itemLink" placeholder="https://...">
-                
-                <label>Image URL</label>
-                <input type="url" id="itemImage" placeholder="https://...">
-                
-                <label>Category</label>
-                <select id="itemCategory">
-                    <option value="">Select category...</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Books">Books</option>
-                    <option value="Clothing">Clothing</option>
-                    <option value="Games">Games</option>
-                    <option value="Sports">Sports</option>
-                    <option value="Other">Other</option>
-                </select>
-                
-                <label>Priority</label>
-                <select id="itemPriority">
-                    <option value="low">Low</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="high">High</option>
-                </select>
-                
-                <label>Tags (comma-separated)</label>
-                <input type="text" id="itemTags" placeholder="gaming, tech, gift">
-                
-                <label>Notes</label>
-                <textarea id="itemNotes" rows="3"></textarea>
-                
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="itemPrivate">
-                    🔒 Private (Admin only)
-                </label>
-                
-                <div class="form-actions">
-                    <button type="submit" class="submit-btn">Save Item</button>
-                    <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
-                </div>
-            </form>
-        </div>
+    <!-- Filter Controls -->
+    <div class="filter-controls">
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="filterByPrice('all')">All Prices</button>
+        <button class="filter-btn" onclick="filterByPrice('under50')">Under $50</button>
+        <button class="filter-btn" onclick="filterByPrice('50to100')">$50-$100</button>
+        <button class="filter-btn" onclick="filterByPrice('over100')">Over $100</button>
+      </div>
     </div>
 
-    <!-- Info Modal -->
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeInfoModal()">&times;</span>
-            <div id="infoContent"></div>
-        </div>
+    <!-- Add Item Form -->
+    <div class="add-form" id="addForm">
+      <input type="text" id="itemName" placeholder="Item name" class="form-input">
+      <input type="text" id="itemPrice" placeholder="Price (e.g., $50)" class="form-input">
+      <input type="url" id="itemLink" placeholder="Link (optional)" class="form-input">
+      <input type="url" id="itemImage" placeholder="Image URL (optional)" class="form-input">
+      <textarea id="itemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
+      
+      <select id="itemCategory" class="form-input">
+        <option value="">Category (optional)</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Books">Books</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Games">Games</option>
+        <option value="Sports">Sports</option>
+        <option value="Other">Other</option>
+      </select>
+      
+      <select id="itemPriority" class="form-input">
+        <option value="medium">Priority: Medium</option>
+        <option value="low">Priority: Low</option>
+        <option value="high">Priority: High</option>
+      </select>
+      
+      <input type="text" id="itemTags" placeholder="Tags (comma-separated, optional)" class="form-input">
+      
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-primary);">
+        <input type="checkbox" id="itemPrivate">
+        🔒 Private (Admin only)
+      </label>
+      
+      <div class="form-buttons">
+        <button onclick="addItem()" class="save-btn">Save</button>
+        <button onclick="toggleAddForm()" class="cancel-btn">Cancel</button>
+      </div>
     </div>
 
-    <!-- Admin Login Modal -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeAdminModal()">&times;</span>
-            <h2>Admin Login</h2>
-            <form id="adminForm">
-                <label>Password</label>
-                <input type="password" id="adminPassword" required>
-                <button type="submit" class="submit-btn">Login</button>
-            </form>
+    <!-- Wishlist Grid -->
+    <div class="wishlist-grid" id="wishlistGrid"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <a href="https://www.perplexity.ai" target="_blank" class="footer-link">
+      <span class="footer-text">Built with</span>
+      <img src="perplexity.png" alt="Perplexity" class="perplexity-logo">
+      <span class="footer-brand">Perplexity</span>
+    </a>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getDatabase, ref, onValue, set, push, remove, update } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAD87l-scYsGq_eX_LLXIuYy9CIyQN2SEY",
+      authDomain: "wishlist-31551.firebaseapp.com",
+      databaseURL: "https://wishlist-31551-default-rtdb.firebaseio.com",
+      projectId: "wishlist-31551",
+      storageBucket: "wishlist-31551.firebasestorage.app",
+      messagingSenderId: "513351669307",
+      appId: "1:513351669307:web:859850b58ecd3a1c7a6e1e",
+      measurementId: "G-6NSSE0FTNN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.dbRef = ref;
+    window.dbSet = set;
+    window.dbPush = push;
+    window.dbRemove = remove;
+    window.dbUpdate = update;
+    window.dbOnValue = onValue;
+
+    // Load profile
+    const profileRef = ref(db, 'profile');
+    onValue(profileRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        document.getElementById('profileName').textContent = data.name || 'Your Name';
+        document.getElementById('avatarCircle').textContent = data.avatar || 'U';
+        document.getElementById('profileTitle').textContent = data.title || 'Student · Developer';
+        document.getElementById('profileLocation').textContent = '📍 ' + (data.location || 'Bettendorf, IA');
+        
+        const bioEl = document.getElementById('profileBio');
+        if (data.bio) {
+          bioEl.textContent = data.bio;
+          bioEl.style.display = 'block';
+        } else {
+          bioEl.style.display = 'none';
+        }
+        
+        const websiteEl = document.getElementById('profileWebsite');
+        if (data.website) {
+          websiteEl.href = data.website;
+          websiteEl.style.display = 'inline-block';
+          document.getElementById('profileMeta').style.display = 'block';
+        } else {
+          websiteEl.style.display = 'none';
+        }
+        
+        const interestsEl = document.getElementById('profileInterests');
+        if (data.interests) {
+          interestsEl.textContent = '💡 ' + data.interests;
+          interestsEl.style.display = 'block';
+          document.getElementById('profileMeta').style.display = 'block';
+        } else {
+          interestsEl.style.display = 'none';
+        }
+      }
+    });
+
+    // Load wishlist items
+    const wishlistRef = ref(db, 'wishlist');
+    onValue(wishlistRef, (snapshot) => {
+      const grid = document.getElementById('wishlistGrid');
+      grid.innerHTML = '';
+      
+      const data = snapshot.val();
+      window.wishlistData = data || {};
+      
+      if (data) {
+        Object.keys(data).forEach(key => {
+          const item = data[key];
+          renderItem(key, item);
+        });
+      }
+    });
+
+    window.renderItem = function(id, item) {
+      const grid = document.getElementById('wishlistGrid');
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'wishlist-item';
+      itemDiv.dataset.id = id;
+      itemDiv.dataset.price = item.price || '';
+      
+      const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+      const isChecked = item.checked || false;
+      const hasInfo = item.info && item.info.trim() !== '';
+      const hasImage = item.image && item.image.trim() !== '';
+      const commentCount = item.comments ? Object.keys(item.comments).length : 0;
+      
+      // Check if item should be visible based on privacy
+      if (item.isPrivate && !isAdmin) {
+        return; // Don't render private items for non-admins
+      }
+      
+      let html = '';
+      
+      // Image
+      if (hasImage) {
+        html += `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="item-image" onerror="this.style.display='none'">`;
+      }
+      
+      // Header
+      html += `
+        <div class="item-header">
+          <label class="checkbox-container">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${id}', this.checked)">
+            <span class="checkmark"></span>
+          </label>
+          <h3 class="item-name ${isChecked ? 'checked' : ''}">${escapeHtml(item.name)}</h3>
+          <button class="delete-btn admin-only" onclick="deleteItem('${id}')" style="display:${isAdmin ? 'block' : 'none'};">×</button>
         </div>
-    </div>
+      `;
+      
+      // Badges
+      if (item.category || item.priority || item.isPrivate) {
+        html += '<div class="item-badges">';
+        if (item.isPrivate && isAdmin) {
+          html += '<span class="private-badge">🔒 PRIVATE</span>';
+        }
+        if (item.category) {
+          html += `<span class="category-badge">${escapeHtml(item.category)}</span>`;
+        }
+        if (item.priority) {
+          html += `<span class="priority-badge priority-${item.priority}">${item.priority.toUpperCase()}</span>`;
+        }
+        html += '</div>';
+      }
+      
+      // Price
+      if (item.price) {
+        html += `<p class="item-price">${escapeHtml(item.price)}</p>`;
+        
+        // Price comparison
+        const priceComp = window.getPriceComparison ? window.getPriceComparison(item) : null;
+        if (priceComp) {
+          html += priceComp;
+        }
+      }
+      
+      // Tags
+      if (item.tags) {
+        html += `<div class="item-tags">${window.tagsFeature ? window.tagsFeature.getTagsHTML(item.tags) : escapeHtml(item.tags)}</div>`;
+      }
+      
+      // Claimed badge
+      if (isChecked && item.claimedBy) {
+        html += '<span class="claimed-badge">✓ PURCHASED</span>';
+      }
+      
+      // Actions
+      html += '<div class="item-actions">';
+      if (item.link) {
+        html += `<a href="${escapeHtml(item.link)}" target="_blank" class="item-link">View</a>`;
+      }
+      if (hasInfo) {
+        html += `<button class="item-link-btn" onclick="openInfo('${id}')">Info</button>`;
+      }
+      html += `<button class="item-link-btn" onclick="openComments('${id}')">Comments ${commentCount > 0 ? '(' + commentCount + ')' : ''}</button>`;
+      html += `<button class="item-link-btn" onclick="openAddComment('${id}')">Add Comment</button>`;
+      if (isAdmin) {
+        html += `<button class="item-link-btn admin-only edit-btn-inline" onclick="openEditItem('${id}')">Edit</button>`;
+        html += `<button class="item-link-btn admin-only" onclick="updateItemPrice('${id}')">💲 Price</button>`;
+      }
+      html += '</div>';
+      
+      itemDiv.innerHTML = html;
+      grid.appendChild(itemDiv);
+    };
+  </script>
 
-    <!-- Firebase -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getDatabase, ref, onValue, push, set, remove, update } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxGcoSW3ls0o3BZI22o1hY_bHe_sdN23Y",
-            authDomain: "wishlist-f5a40.firebaseapp.com",
-            databaseURL: "https://wishlist-f5a40-default-rtdb.firebaseio.com",
-            projectId: "wishlist-f5a40",
-            storageBucket: "wishlist-f5a40.firebasestorage.app",
-            messagingSenderId: "562033032516",
-            appId: "1:562033032516:web:5f8f6b6ddb8c97d6e2d2f2"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        window.db = getDatabase(app);
-        window.dbRef = ref;
-        window.dbOnValue = onValue;
-        window.dbPush = push;
-        window.dbSet = set;
-        window.dbRemove = remove;
-        window.dbUpdate = update;
-
-        loadWishlist();
-    </script>
-
-    <!-- Load feature modules -->
-    <script src="theme.js"></script>
-    <script src="tags.js"></script>
-    <script src="claimed.js"></script>
-    <script src="private.js"></script>
-    <script src="pricetracking.js"></script>
-    <script src="script.js"></script>
+  <!-- Load feature modules -->
+  <script src="theme.js"></script>
+  <script src="tags.js"></script>
+  <script src="claimed.js"></script>
+  <script src="private.js"></script>
+  <script src="pricetracking.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
