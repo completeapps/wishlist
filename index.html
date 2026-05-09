@@ -1,417 +1,338 @@
-// Admin password
-const ADMIN_PASSWORD = "0000";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishlist</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Admin Login (top-right corner) -->
+  <div class="admin-controls">
+    <button id="adminBtn" class="admin-btn" onclick="toggleAdmin()">Admin</button>
+    <button class="edit-profile-btn admin-only" onclick="openProfileEditor()" style="display:none;">Edit Profile</button>
+  </div>
 
-window.addEventListener('DOMContentLoaded', () => {
-  updateAdminUI();
-});
+  <!-- Admin Password Modal -->
+  <div class="modal" id="adminModal">
+    <div class="modal-content">
+      <h3>Admin Login</h3>
+      <input type="password" id="adminPassword" placeholder="Enter password" class="form-input">
+      <div class="form-buttons">
+        <button onclick="loginAdmin()" class="save-btn">Login</button>
+        <button onclick="closeAdminModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-// Toggle admin mode
-function toggleAdmin() {
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-  
-  if (isAdmin) {
-    sessionStorage.removeItem('isAdmin');
-    updateAdminUI();
-  } else {
-    document.getElementById('adminModal').classList.add('active');
-  }
-}
+  <!-- Profile Editor Modal -->
+  <div class="modal" id="profileModal">
+    <div class="modal-content modal-large">
+      <h3>Edit Profile</h3>
+      <input type="text" id="editName" placeholder="Your Name" class="form-input">
+      <input type="text" id="editTitle" placeholder="Title (e.g., Student · Developer)" class="form-input">
+      <input type="text" id="editLocation" placeholder="Location" class="form-input">
+      <textarea id="editBio" placeholder="About me / Bio (optional)" class="form-textarea"></textarea>
+      <input type="text" id="editAvatar" placeholder="Avatar Letter (1 character)" class="form-input" maxlength="1">
+      <input type="url" id="editWebsite" placeholder="Website URL (optional)" class="form-input">
+      <input type="text" id="editInterests" placeholder="Interests (comma separated, optional)" class="form-input">
+      <div class="form-buttons">
+        <button onclick="saveProfile()" class="save-btn">Save Profile</button>
+        <button onclick="closeProfileModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-// Login admin
-function loginAdmin() {
-  const password = document.getElementById('adminPassword').value;
-  
-  if (password === ADMIN_PASSWORD) {
-    sessionStorage.setItem('isAdmin', 'true');
-    closeAdminModal();
-    updateAdminUI();
-    alert('Admin mode enabled');
-  } else {
-    alert('Incorrect password');
-  }
-}
+  <!-- Edit Item Modal -->
+  <div class="modal" id="editItemModal">
+    <div class="modal-content modal-large">
+      <h3>Edit Item</h3>
+      <input type="hidden" id="editItemId">
+      <input type="text" id="editItemName" placeholder="Item name" class="form-input">
+      <input type="text" id="editItemPrice" placeholder="Price (e.g., $50)" class="form-input">
+      <input type="url" id="editItemLink" placeholder="Link (optional)" class="form-input">
+      <input type="url" id="editItemImage" placeholder="Image URL (optional)" class="form-input">
+      <select id="editItemTag" class="form-select">
+        <option value="">No Tag</option>
+        <option value="Birthday">🎂 Birthday</option>
+        <option value="Christmas">🎄 Christmas</option>
+        <option value="Graduation">🎓 Graduation</option>
+        <option value="General">🎁 General</option>
+      </select>
+      <textarea id="editItemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
+      <div class="form-buttons">
+        <button onclick="saveItemEdit()" class="save-btn">Save Changes</button>
+        <button onclick="closeEditItemModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-function closeAdminModal() {
-  document.getElementById('adminModal').classList.remove('active');
-  document.getElementById('adminPassword').value = '';
-}
+  <!-- Info Modal -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <div class="info-header">
+        <h3 id="infoItemName">Item Info</h3>
+        <button class="modal-close" onclick="closeInfoModal()">×</button>
+      </div>
+      <div id="infoContent" class="info-content">
+        No info available.
+      </div>
+    </div>
+  </div>
 
-function updateAdminUI() {
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-  const adminBtn = document.getElementById('adminBtn');
-  const adminElements = document.querySelectorAll('.admin-only');
-  
-  if (isAdmin) {
-    adminBtn.classList.add('active');
-    adminBtn.textContent = 'Logout';
-    adminElements.forEach(el => el.style.display = 'block');
-  } else {
-    adminBtn.classList.remove('active');
-    adminBtn.textContent = 'Admin';
-    adminElements.forEach(el => el.style.display = 'none');
-  }
-}
+  <!-- Comments Modal -->
+  <div class="modal" id="commentsModal">
+    <div class="modal-content modal-large">
+      <div class="info-header">
+        <h3 id="commentsItemName">Comments</h3>
+        <button class="modal-close" onclick="closeCommentsModal()">×</button>
+      </div>
+      <div id="commentsContent" class="comments-list">
+        <p style="color: #666;">No comments yet.</p>
+      </div>
+    </div>
+  </div>
 
-// Profile functions
-function openProfileEditor() {
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-  if (!isAdmin) {
-    alert('Admin access required');
-    return;
-  }
-  
-  document.getElementById('editName').value = document.getElementById('profileName').textContent;
-  document.getElementById('editTitle').value = document.getElementById('profileTitle').textContent;
-  document.getElementById('editLocation').value = document.getElementById('profileLocation').textContent.replace('📍 ', '');
-  document.getElementById('editBio').value = document.getElementById('profileBio').textContent;
-  document.getElementById('editAvatar').value = document.getElementById('avatarCircle').textContent;
-  
-  const websiteEl = document.getElementById('profileWebsite');
-  if (websiteEl.style.display !== 'none') {
-    document.getElementById('editWebsite').value = websiteEl.href;
-  }
-  
-  const interestsEl = document.getElementById('profileInterests');
-  if (interestsEl.style.display !== 'none') {
-    document.getElementById('editInterests').value = interestsEl.textContent.replace('💡 ', '');
-  }
-  
-  document.getElementById('profileModal').classList.add('active');
-}
+  <!-- Add Comment Modal -->
+  <div class="modal" id="addCommentModal">
+    <div class="modal-content">
+      <h3>Add Comment</h3>
+      <input type="hidden" id="commentItemId">
+      <input type="text" id="commentAuthor" placeholder="Your name" class="form-input">
+      <textarea id="commentText" placeholder="Write your comment..." class="form-textarea"></textarea>
+      <div class="form-buttons">
+        <button onclick="submitComment()" class="save-btn">Post Comment</button>
+        <button onclick="closeAddCommentModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-function saveProfile() {
-  const name = document.getElementById('editName').value.trim();
-  const title = document.getElementById('editTitle').value.trim();
-  const location = document.getElementById('editLocation').value.trim();
-  const bio = document.getElementById('editBio').value.trim();
-  const avatar = document.getElementById('editAvatar').value.trim().toUpperCase();
-  const website = document.getElementById('editWebsite').value.trim();
-  const interests = document.getElementById('editInterests').value.trim();
-  
-  if (!name) {
-    alert('Please enter a name');
-    return;
-  }
-  
-  const profileData = {
-    name: name,
-    title: title,
-    location: location,
-    bio: bio,
-    avatar: avatar || name.charAt(0).toUpperCase(),
-    website: website,
-    interests: interests
-  };
-  
-  window.dbSet(window.dbRef(window.db, 'profile'), profileData);
-  closeProfileModal();
-  alert('Profile updated!');
-}
+  <!-- Profile Section -->
+  <header class="profile-section">
+    <div class="profile-container">
+      <div class="profile-avatar">
+        <div class="avatar-circle" id="avatarCircle">U</div>
+      </div>
+      <div class="profile-info">
+        <h1 class="profile-name" id="profileName">Your Name</h1>
+        <p class="profile-title" id="profileTitle">Student · Developer</p>
+        <p class="profile-location" id="profileLocation">📍 Bettendorf, IA</p>
+        <p class="profile-bio" id="profileBio" style="display:none;"></p>
+        <div class="profile-meta" id="profileMeta" style="display:none;">
+          <a href="#" id="profileWebsite" target="_blank" class="profile-link" style="display:none;">🔗 Website</a>
+          <p class="profile-interests" id="profileInterests" style="display:none;"></p>
+        </div>
+      </div>
+    </div>
+  </header>
 
-function closeProfileModal() {
-  document.getElementById('profileModal').classList.remove('active');
-}
+  <!-- Wishlist Section -->
+  <main class="wishlist-section">
+    <div class="section-header">
+      <h2>Wishlist</h2>
+      <button class="add-btn admin-only" onclick="toggleAddForm()" style="display:none;">+ Add Item</button>
+    </div>
 
-// Edit item
-function openEditItem(id) {
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-  if (!isAdmin) {
-    alert('Admin access required');
-    return;
-  }
-  
-  const item = window.wishlistData[id];
-  if (!item) return;
-  
-  document.getElementById('editItemId').value = id;
-  document.getElementById('editItemName').value = item.name || '';
-  document.getElementById('editItemPrice').value = item.price || '';
-  document.getElementById('editItemLink').value = item.link || '';
-  document.getElementById('editItemImage').value = item.image || '';
-  document.getElementById('editItemTag').value = item.tag || '';
-  document.getElementById('editItemInfo').value = item.info || '';
-  
-  document.getElementById('editItemModal').classList.add('active');
-}
+    <!-- Filter Controls -->
+    <div class="filter-controls">
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="filterByPrice('all')">All Prices</button>
+        <button class="filter-btn" onclick="filterByPrice('under50')">Under $50</button>
+        <button class="filter-btn" onclick="filterByPrice('50to100')">$50-$100</button>
+        <button class="filter-btn" onclick="filterByPrice('over100')">Over $100</button>
+      </div>
+      <div class="filter-group">
+        <button class="filter-btn active" onclick="filterByTag('all')">All Tags</button>
+        <button class="filter-btn" onclick="filterByTag('Birthday')">🎂 Birthday</button>
+        <button class="filter-btn" onclick="filterByTag('Christmas')">🎄 Christmas</button>
+        <button class="filter-btn" onclick="filterByTag('Graduation')">🎓 Graduation</button>
+        <button class="filter-btn" onclick="filterByTag('General')">🎁 General</button>
+      </div>
+    </div>
 
-function saveItemEdit() {
-  const id = document.getElementById('editItemId').value;
-  const name = document.getElementById('editItemName').value.trim();
-  const price = document.getElementById('editItemPrice').value.trim();
-  const link = document.getElementById('editItemLink').value.trim();
-  const image = document.getElementById('editItemImage').value.trim();
-  const tag = document.getElementById('editItemTag').value;
-  const info = document.getElementById('editItemInfo').value.trim();
-  
-  if (!name) {
-    alert('Please enter an item name');
-    return;
-  }
-  
-  window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), {
-    name: name,
-    price: price,
-    link: link,
-    image: image,
-    tag: tag,
-    info: info
-  });
-  
-  closeEditItemModal();
-  alert('Item updated!');
-}
+    <!-- Add Item Form -->
+    <div class="add-form" id="addForm">
+      <input type="text" id="itemName" placeholder="Item name" class="form-input">
+      <input type="text" id="itemPrice" placeholder="Price (e.g., $50)" class="form-input">
+      <input type="url" id="itemLink" placeholder="Link (optional)" class="form-input">
+      <input type="url" id="itemImage" placeholder="Image URL (optional)" class="form-input">
+      <select id="itemTag" class="form-select">
+        <option value="">No Tag</option>
+        <option value="Birthday">🎂 Birthday</option>
+        <option value="Christmas">🎄 Christmas</option>
+        <option value="Graduation">🎓 Graduation</option>
+        <option value="General">🎁 General</option>
+      </select>
+      <textarea id="itemInfo" placeholder="Info / Details (optional)" class="form-textarea"></textarea>
+      <div class="form-buttons">
+        <button onclick="addItem()" class="save-btn">Save</button>
+        <button onclick="toggleAddForm()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
 
-function closeEditItemModal() {
-  document.getElementById('editItemModal').classList.remove('active');
-}
+    <!-- Wishlist Grid -->
+    <div class="wishlist-grid" id="wishlistGrid"></div>
+  </main>
 
-// Add/Delete items
-function toggleAddForm() {
-  const form = document.getElementById('addForm');
-  form.classList.toggle('active');
-  
-  if (!form.classList.contains('active')) {
-    document.getElementById('itemName').value = '';
-    document.getElementById('itemPrice').value = '';
-    document.getElementById('itemLink').value = '';
-    document.getElementById('itemImage').value = '';
-    document.getElementById('itemTag').value = '';
-    document.getElementById('itemInfo').value = '';
-  }
-}
+  <!-- Footer -->
+  <footer class="footer">
+    <a href="https://www.perplexity.ai" target="_blank" class="footer-link">
+      <span class="footer-text">Built with</span>
+      <img src="perplexity.png" alt="Perplexity" class="perplexity-logo">
+      <span class="footer-brand">Perplexity</span>
+    </a>
+  </footer>
 
-function addItem() {
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-  if (!isAdmin) {
-    alert('Admin access required');
-    return;
-  }
-  
-  const name = document.getElementById('itemName').value.trim();
-  const price = document.getElementById('itemPrice').value.trim();
-  const link = document.getElementById('itemLink').value.trim();
-  const image = document.getElementById('itemImage').value.trim();
-  const tag = document.getElementById('itemTag').value;
-  const info = document.getElementById('itemInfo').value.trim();
-  
-  if (!name) {
-    alert('Please enter an item name');
-    return;
-  }
-  
-  const newItemRef = window.dbPush(window.dbRef(window.db, 'wishlist'));
-  window.dbSet(newItemRef, {
-    name: name,
-    price: price,
-    link: link,
-    image: image,
-    tag: tag,
-    info: info,
-    checked: false,
-    comments: {}
-  });
-  
-  toggleAddForm();
-}
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getDatabase, ref, onValue, set, push, remove, update } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
 
-function deleteItem(id) {
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-  if (!isAdmin) {
-    alert('Admin access required');
-    return;
-  }
-  
-  if (confirm('Remove this item from wishlist?')) {
-    window.dbRemove(window.dbRef(window.db, 'wishlist/' + id));
-  }
-}
+    const firebaseConfig = {
+      apiKey: "AIzaSyAD87l-scYsGq_eX_LLXIuYy9CIyQN2SEY",
+      authDomain: "wishlist-31551.firebaseapp.com",
+      databaseURL: "https://wishlist-31551-default-rtdb.firebaseio.com",
+      projectId: "wishlist-31551",
+      storageBucket: "wishlist-31551.firebasestorage.app",
+      messagingSenderId: "513351669307",
+      appId: "1:513351669307:web:859850b58ecd3a1c7a6e1e",
+      measurementId: "G-6NSSE0FTNN"
+    };
 
-function toggleCheck(id, checked) {
-  window.dbUpdate(window.dbRef(window.db, 'wishlist/' + id), {
-    checked: checked
-  });
-}
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.dbRef = ref;
+    window.dbSet = set;
+    window.dbPush = push;
+    window.dbRemove = remove;
+    window.dbUpdate = update;
 
-// Info modal
-function openInfo(id) {
-  const item = window.wishlistData[id];
-  if (!item) return;
-  
-  document.getElementById('infoItemName').textContent = item.name;
-  document.getElementById('infoContent').textContent = item.info || 'No info available.';
-  document.getElementById('infoModal').classList.add('active');
-}
+    // Load profile
+    const profileRef = ref(db, 'profile');
+    onValue(profileRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        document.getElementById('profileName').textContent = data.name || 'Your Name';
+        document.getElementById('avatarCircle').textContent = data.avatar || 'U';
+        document.getElementById('profileTitle').textContent = data.title || 'Student · Developer';
+        document.getElementById('profileLocation').textContent = '📍 ' + (data.location || 'Bettendorf, IA');
+        
+        const bioEl = document.getElementById('profileBio');
+        if (data.bio) {
+          bioEl.textContent = data.bio;
+          bioEl.style.display = 'block';
+        } else {
+          bioEl.style.display = 'none';
+        }
+        
+        const websiteEl = document.getElementById('profileWebsite');
+        if (data.website) {
+          websiteEl.href = data.website;
+          websiteEl.style.display = 'inline-block';
+          document.getElementById('profileMeta').style.display = 'block';
+        } else {
+          websiteEl.style.display = 'none';
+        }
+        
+        const interestsEl = document.getElementById('profileInterests');
+        if (data.interests) {
+          interestsEl.textContent = '💡 ' + data.interests;
+          interestsEl.style.display = 'block';
+          document.getElementById('profileMeta').style.display = 'block';
+        } else {
+          interestsEl.style.display = 'none';
+        }
+      }
+    });
 
-function closeInfoModal() {
-  document.getElementById('infoModal').classList.remove('active');
-}
-
-// Comments modal
-function openComments(id) {
-  const item = window.wishlistData[id];
-  if (!item) return;
-  
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-  
-  document.getElementById('commentsItemName').textContent = item.name;
-  const commentsContent = document.getElementById('commentsContent');
-  commentsContent.innerHTML = '';
-  
-  if (item.comments && Object.keys(item.comments).length > 0) {
-    Object.entries(item.comments).forEach(([commentId, comment]) => {
-      const commentDiv = document.createElement('div');
-      commentDiv.className = 'comment';
+    // Load wishlist items
+    const wishlistRef = ref(db, 'wishlist');
+    onValue(wishlistRef, (snapshot) => {
+      const grid = document.getElementById('wishlistGrid');
+      grid.innerHTML = '';
       
-      let commentHTML = `<span class="comment-author">${escapeHtml(comment.author)}:</span> <span class="comment-text">${escapeHtml(comment.text)}</span>`;
+      const data = snapshot.val();
+      window.wishlistData = data || {};
       
-      if (isAdmin) {
-        commentHTML += ` <button class="delete-comment-btn" onclick="deleteComment('${id}', '${commentId}')">×</button>`;
+      if (data) {
+        Object.keys(data).forEach(key => {
+          const item = data[key];
+          renderItem(key, item);
+        });
+      }
+    });
+
+    window.renderItem = function(id, item) {
+      const grid = document.getElementById('wishlistGrid');
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'wishlist-item';
+      itemDiv.dataset.id = id;
+      itemDiv.dataset.price = item.price || '';
+      itemDiv.dataset.tag = item.tag || '';
+      
+      const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+      const isChecked = item.checked || false;
+      const hasInfo = item.info && item.info.trim() !== '';
+      const hasImage = item.image && item.image.trim() !== '';
+      const hasTag = item.tag && item.tag.trim() !== '';
+      const commentCount = item.comments ? Object.keys(item.comments).length : 0;
+      
+      let html = '';
+      
+      // Image
+      if (hasImage) {
+        html += `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="item-image" onerror="this.style.display='none'">`;
       }
       
-      commentDiv.innerHTML = commentHTML;
-      commentsContent.appendChild(commentDiv);
-    });
-  } else {
-    commentsContent.innerHTML = '<p style="color: #666;">No comments yet.</p>';
-  }
-  
-  document.getElementById('commentsModal').classList.add('active');
-}
-
-function closeCommentsModal() {
-  document.getElementById('commentsModal').classList.remove('active');
-}
-
-// Delete comment
-function deleteComment(itemId, commentId) {
-  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-  if (!isAdmin) {
-    alert('Admin access required');
-    return;
-  }
-  
-  if (confirm('Delete this comment?')) {
-    window.dbRemove(window.dbRef(window.db, 'wishlist/' + itemId + '/comments/' + commentId));
-    // Refresh the comments modal
-    setTimeout(() => openComments(itemId), 200);
-  }
-}
-
-// Add comment modal
-function openAddComment(id) {
-  document.getElementById('commentItemId').value = id;
-  document.getElementById('commentAuthor').value = '';
-  document.getElementById('commentText').value = '';
-  document.getElementById('addCommentModal').classList.add('active');
-}
-
-function closeAddCommentModal() {
-  document.getElementById('addCommentModal').classList.remove('active');
-}
-
-function submitComment() {
-  const itemId = document.getElementById('commentItemId').value;
-  const author = document.getElementById('commentAuthor').value.trim();
-  const text = document.getElementById('commentText').value.trim();
-  
-  if (!author || !text) {
-    alert('Please enter your name and comment');
-    return;
-  }
-  
-  const commentRef = window.dbPush(window.dbRef(window.db, 'wishlist/' + itemId + '/comments'));
-  window.dbSet(commentRef, {
-    author: author,
-    text: text,
-    timestamp: Date.now()
-  });
-  
-  closeAddCommentModal();
-  alert('Comment posted!');
-}
-
-// Filters
-let currentPriceFilter = 'all';
-let currentTagFilter = 'all';
-
-function filterByPrice(filter) {
-  currentPriceFilter = filter;
-  
-  document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
-    if (btn.textContent.includes('$') || btn.textContent.includes('All Prices')) {
-      btn.classList.remove('active');
-    }
-  });
-  event.target.classList.add('active');
-  
-  applyFilters();
-}
-
-function filterByTag(filter) {
-  currentTagFilter = filter;
-  
-  document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
-    if (btn.textContent.includes('🎂') || btn.textContent.includes('🎄') || 
-        btn.textContent.includes('🎓') || btn.textContent.includes('🎁') || 
-        btn.textContent.includes('All Tags')) {
-      btn.classList.remove('active');
-    }
-  });
-  event.target.classList.add('active');
-  
-  applyFilters();
-}
-
-function applyFilters() {
-  const items = document.querySelectorAll('.wishlist-item');
-  
-  items.forEach(item => {
-    let showItem = true;
-    
-    // Price filter
-    if (currentPriceFilter !== 'all') {
-      const priceText = item.dataset.price;
-      const priceNum = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+      // Tags
+      if (hasTag) {
+        const tagEmoji = {
+          'Birthday': '🎂',
+          'Christmas': '🎄',
+          'Graduation': '🎓',
+          'General': '🎁'
+        };
+        html += `<div class="item-tags"><span class="item-tag">${tagEmoji[item.tag] || ''} ${escapeHtml(item.tag)}</span></div>`;
+      }
       
-      if (currentPriceFilter === 'under50' && priceNum >= 50) showItem = false;
-      if (currentPriceFilter === '50to100' && (priceNum < 50 || priceNum > 100)) showItem = false;
-      if (currentPriceFilter === 'over100' && priceNum <= 100) showItem = false;
-    }
-    
-    // Tag filter
-    if (currentTagFilter !== 'all') {
-      const tag = item.dataset.tag;
-      if (tag !== currentTagFilter) showItem = false;
-    }
-    
-    if (showItem) {
-      item.classList.remove('hidden');
-    } else {
-      item.classList.add('hidden');
-    }
-  });
-}
+      // Header
+      html += `
+        <div class="item-header">
+          <label class="checkbox-container">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${id}', this.checked)">
+            <span class="checkmark"></span>
+          </label>
+          <h3 class="item-name ${isChecked ? 'checked' : ''}">${escapeHtml(item.name)}</h3>
+          <button class="delete-btn admin-only" onclick="deleteItem('${id}')" style="display:${isAdmin ? 'block' : 'none'};">×</button>
+        </div>
+      `;
+      
+      // Price
+      if (item.price) {
+        html += `<p class="item-price">${escapeHtml(item.price)}</p>`;
+      }
+      
+      // Actions
+      html += '<div class="item-actions">';
+      if (item.link) {
+        html += `<a href="${escapeHtml(item.link)}" target="_blank" class="item-link">View</a>`;
+      }
+      if (hasInfo) {
+        html += `<a href="javascript:void(0)" onclick="openInfo('${id}')" class="item-link info-link">Info</a>`;
+      }
+      html += `<a href="javascript:void(0)" onclick="openComments('${id}')" class="item-link comment-link">Comments ${commentCount > 0 ? '(' + commentCount + ')' : ''}</a>`;
+      html += `<a href="javascript:void(0)" onclick="openAddComment('${id}')" class="item-link add-comment-link">Add Comment</a>`;
+      if (isAdmin) {
+        html += `<a href="javascript:void(0)" onclick="openEditItem('${id}')" class="item-link edit-link admin-only">Edit</a>`;
+      }
+      html += '</div>';
+      
+      itemDiv.innerHTML = html;
+      grid.appendChild(itemDiv);
+    };
+  </script>
 
-// Escape HTML
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Close modals on background click
-document.addEventListener('click', (e) => {
-  const adminModal = document.getElementById('adminModal');
-  const profileModal = document.getElementById('profileModal');
-  const infoModal = document.getElementById('infoModal');
-  const editItemModal = document.getElementById('editItemModal');
-  const commentsModal = document.getElementById('commentsModal');
-  const addCommentModal = document.getElementById('addCommentModal');
-  
-  if (e.target === adminModal) closeAdminModal();
-  if (e.target === profileModal) closeProfileModal();
-  if (e.target === infoModal) closeInfoModal();
-  if (e.target === editItemModal) closeEditItemModal();
-  if (e.target === commentsModal) closeCommentsModal();
-  if (e.target === addCommentModal) closeAddCommentModal();
-});
+  <script src="script.js"></script>
+</body>
+</html>
