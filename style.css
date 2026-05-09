@@ -35,12 +35,14 @@ body {
 
 .admin-btn:hover,
 .edit-profile-btn:hover {
-  border-color: #fff;
+  border-color: #8b5cf6;
+  color: #8b5cf6;
 }
 
 .admin-btn.active {
-  background: #fff;
+  background: #8b5cf6;
   color: #000;
+  border-color: #8b5cf6;
 }
 
 .modal {
@@ -78,6 +80,7 @@ body {
 .modal-content h3 {
   margin-bottom: 20px;
   font-size: 20px;
+  color: #8b5cf6;
 }
 
 .modal-close {
@@ -93,7 +96,8 @@ body {
 }
 
 .modal-close:hover {
-  border-color: #fff;
+  border-color: #8b5cf6;
+  color: #8b5cf6;
 }
 
 .info-header {
@@ -116,6 +120,51 @@ body {
   word-wrap: break-word;
 }
 
+.comments-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.comment {
+  background: rgba(40, 40, 40, 0.5);
+  border: 1px solid #333;
+  padding: 12px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  position: relative;
+}
+
+.comment-author {
+  color: #8b5cf6;
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.comment-text {
+  color: #ccc;
+}
+
+.delete-comment-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: 1px solid #333;
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-comment-btn:hover {
+  background: #f00;
+  border-color: #f00;
+}
+
 .profile-section {
   border: 1px solid #333;
   padding: 40px;
@@ -132,7 +181,7 @@ body {
 .avatar-circle {
   width: 100px;
   height: 100px;
-  border: 2px solid #fff;
+  border: 2px solid #8b5cf6;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -141,6 +190,7 @@ body {
   font-weight: bold;
   background: transparent;
   flex-shrink: 0;
+  color: #8b5cf6;
 }
 
 .profile-info {
@@ -183,7 +233,7 @@ body {
 }
 
 .profile-link {
-  color: #fff;
+  color: #8b5cf6;
   text-decoration: none;
   font-size: 14px;
   margin-right: 15px;
@@ -201,7 +251,7 @@ body {
 }
 
 .wishlist-section {
-  max-width: 1200px;
+  max-width: 100%;
 }
 
 .section-header {
@@ -220,7 +270,7 @@ body {
 }
 
 .add-btn {
-  background: #fff;
+  background: #8b5cf6;
   color: #000;
   border: none;
   padding: 12px 24px;
@@ -232,7 +282,7 @@ body {
 }
 
 .add-btn:hover {
-  background: #ddd;
+  background: #a78bfa;
 }
 
 .add-btn:active {
@@ -267,14 +317,14 @@ body {
 }
 
 .filter-btn:hover {
-  border-color: #fff;
-  color: #fff;
+  border-color: #8b5cf6;
+  color: #8b5cf6;
 }
 
 .filter-btn.active {
-  background: #fff;
+  background: #8b5cf6;
   color: #000;
-  border-color: #fff;
+  border-color: #8b5cf6;
 }
 
 .add-form {
@@ -320,7 +370,7 @@ body {
 .form-textarea:focus,
 .form-select:focus {
   outline: none;
-  border-color: #fff;
+  border-color: #8b5cf6;
 }
 
 .form-input::placeholder,
@@ -345,13 +395,13 @@ body {
 }
 
 .save-btn {
-  background: #fff;
+  background: #8b5cf6;
   color: #000;
   flex: 1;
 }
 
 .save-btn:hover {
-  background: #ddd;
+  background: #a78bfa;
 }
 
 .cancel-btn {
@@ -361,12 +411,13 @@ body {
 }
 
 .cancel-btn:hover {
-  border-color: #fff;
+  border-color: #8b5cf6;
+  color: #8b5cf6;
 }
 
 .wishlist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
 
@@ -379,7 +430,7 @@ body {
 }
 
 .wishlist-item:hover {
-  border-color: #fff;
+  border-color: #8b5cf6;
   transform: translateY(-2px);
 }
 
@@ -396,19 +447,17 @@ body {
 }
 
 .item-tags {
-  display: flex;
-  gap: 6px;
   margin-bottom: 12px;
-  flex-wrap: wrap;
 }
 
 .item-tag {
-  background: transparent;
-  border: 1px solid #666;
-  color: #999;
+  display: inline-block;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid #8b5cf6;
+  color: #8b5cf6;
   padding: 4px 10px;
-  font-size: 11px;
-  letter-spacing: 0.5px;
+  font-size: 12px;
+  border-radius: 3px;
 }
 
 .item-header {
@@ -445,11 +494,13 @@ body {
 }
 
 .checkbox-container:hover .checkmark {
-  background: rgba(255, 255, 255, 0.1);
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
 }
 
 .checkbox-container input:checked ~ .checkmark {
-  background: #fff;
+  background: #8b5cf6;
+  border-color: #8b5cf6;
 }
 
 .checkbox-container input:checked ~ .checkmark:after {
@@ -520,114 +571,48 @@ body {
 }
 
 .item-link:hover {
-  border-color: #fff;
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
 }
 
-.info-btn-big {
-  background: #fff;
+.info-link {
+  color: #a78bfa;
+  border-color: #8b5cf6;
+}
+
+.info-link:hover {
+  background: #8b5cf6;
   color: #000;
-  border: 2px solid #fff;
-  padding: 10px 24px;
-  font-family: 'Courier New', monospace;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 1px;
 }
 
-.info-btn-big:hover {
-  background: #000;
-  color: #fff;
-  transform: scale(1.05);
+.comment-link {
+  color: #60a5fa;
+  border-color: #3b82f6;
 }
 
-.edit-btn {
-  background: transparent;
-  color: #0ff;
-  border: 2px solid #0ff;
-  padding: 10px 24px;
-  font-family: 'Courier New', monospace;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 1px;
-}
-
-.edit-btn:hover {
-  background: #0ff;
+.comment-link:hover {
+  background: #3b82f6;
   color: #000;
-  transform: scale(1.05);
 }
 
-.item-comments {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #222;
-  margin-left: 34px;
+.add-comment-link {
+  color: #34d399;
+  border-color: #10b981;
 }
 
-.comments-header {
-  font-size: 13px;
-  color: #999;
-  margin-bottom: 10px;
-  font-weight: 700;
-}
-
-.comment {
-  background: rgba(40, 40, 40, 0.5);
-  border: 1px solid #333;
-  padding: 10px;
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-
-.comment-author {
-  color: #0ff;
-  font-weight: 700;
-  margin-right: 8px;
-}
-
-.comment-text {
-  color: #ccc;
-}
-
-.comment-input-group {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.comment-input {
-  flex: 1;
-  background: transparent;
-  border: 1px solid #333;
-  color: #fff;
-  padding: 8px 12px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-}
-
-.comment-input:focus {
-  outline: none;
-  border-color: #fff;
-}
-
-.comment-btn {
-  background: #fff;
+.add-comment-link:hover {
+  background: #10b981;
   color: #000;
-  border: none;
-  padding: 8px 16px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
-.comment-btn:hover {
-  background: #ddd;
+.edit-link {
+  color: #fbbf24;
+  border-color: #f59e0b;
+}
+
+.edit-link:hover {
+  background: #f59e0b;
+  color: #000;
 }
 
 .footer {
@@ -647,7 +632,7 @@ body {
 }
 
 .footer-link:hover {
-  color: #fff;
+  color: #8b5cf6;
 }
 
 .footer-text {
@@ -658,6 +643,7 @@ body {
 .perplexity-logo {
   width: 20px;
   height: 20px;
+  object-fit: contain;
   transition: transform 0.2s;
 }
 
@@ -669,6 +655,18 @@ body {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.5px;
+}
+
+@media (max-width: 1400px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -724,9 +722,7 @@ body {
     flex-direction: column;
   }
 
-  .item-link,
-  .info-btn-big,
-  .edit-btn {
+  .item-link {
     text-align: center;
     width: 100%;
   }
