@@ -1,6 +1,4 @@
-// Theme Toggle - Dark/Light Mode
-// Manages theme switching and saves preference
-
+// Theme Toggle - Simple Dark/Light Mode
 (function() {
   // Check saved theme or default to dark
   const savedTheme = localStorage.getItem('wishlist-theme') || 'dark';
@@ -8,23 +6,21 @@
   // Apply theme on page load
   document.documentElement.setAttribute('data-theme', savedTheme);
   
-  // Create theme toggle button
+  // Wait for page to load
   window.addEventListener('DOMContentLoaded', () => {
-    // Add toggle button to admin controls
-    const adminControls = document.querySelector('.admin-controls');
+    // Create theme toggle button
     const themeBtn = document.createElement('button');
-    themeBtn.id = 'themeToggle';
-    themeBtn.className = 'theme-toggle-btn';
+    themeBtn.className = 'theme-toggle';
     themeBtn.innerHTML = savedTheme === 'light' ? '🌙' : '☀️';
     themeBtn.title = 'Toggle Theme';
     themeBtn.onclick = toggleTheme;
     
-    // Insert before admin button
-    adminControls.insertBefore(themeBtn, adminControls.firstChild);
+    // Add to body
+    document.body.appendChild(themeBtn);
   });
   
   // Toggle theme function
-  window.toggleTheme = function() {
+  function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
@@ -32,7 +28,9 @@
     localStorage.setItem('wishlist-theme', newTheme);
     
     // Update button icon
-    const btn = document.getElementById('themeToggle');
-    btn.innerHTML = newTheme === 'light' ? '🌙' : '☀️';
-  };
+    const btn = document.querySelector('.theme-toggle');
+    if (btn) {
+      btn.innerHTML = newTheme === 'light' ? '🌙' : '☀️';
+    }
+  }
 })();
